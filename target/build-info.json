@@ -1,0 +1,664 @@
+{
+  "version" : "1.0.1",
+  "name" : "elo-cmis-project",
+  "number" : "1420800601457",
+  "type" : "MAVEN",
+  "buildAgent" : {
+    "name" : "Maven",
+    "version" : "3.2.2"
+  },
+  "agent" : {
+    "name" : "Maven",
+    "version" : "3.2.2"
+  },
+  "started" : "2015-01-09T12:50:03.064+0200",
+  "durationMillis" : 6267,
+  "licenseControl" : {
+    "runChecks" : false,
+    "includePublishedArtifacts" : false,
+    "autoDiscover" : false,
+    "scopesList" : "",
+    "licenseViolationsRecipientsList" : ""
+  },
+  "buildRetention" : {
+    "count" : -1,
+    "deleteBuildArtifacts" : true,
+    "buildNumbersNotToBeDiscarded" : [ ]
+  },
+  "modules" : [ {
+    "properties" : {
+      "cargo-maven2.port" : "8082",
+      "spring.version" : "4.0.5.RELEASE",
+      "artifactory-maven-plugin.version" : "2.2.1",
+      "maven-war-plugin.version" : "2.4",
+      "tomcat7-maven-plugin.port" : "8083",
+      "maven-compiler-plugin.version" : "3.1",
+      "elo-client.version" : "8.00.040.392",
+      "project.build.sourceEncoding" : "UTF-8",
+      "junit.version" : "4.11",
+      "commons-pool.version" : "1.6",
+      "java.version" : "1.7",
+      "slf4j.version" : "1.7.5",
+      "cargo-maven2.version" : "1.4.7",
+      "opencmis.version" : "0.11.0",
+      "tomcat7-maven-plugin.version" : "2.0",
+      "commons-lang3.version" : "3.3.2",
+      "maven-release-plugin.version" : "3.1",
+      "env" : "default",
+      "commons-logging.version" : "1.1.3",
+      "commons-codec.version" : "1.9",
+      "log4j.version" : "1.2.16"
+    },
+    "id" : "com.elo.cmis:elo-cmis-project:2.0",
+    "artifacts" : [ {
+      "type" : "pom",
+      "sha1" : "5d6e15774aee93f65d142dc522aaf5b7ccfe3a9f",
+      "md5" : "5245aca78ade1f0ac6a4d22d855436e0",
+      "name" : "elo-cmis-project-2.0.pom"
+    } ]
+  }, {
+    "properties" : {
+      "cargo-maven2.port" : "8082",
+      "spring.version" : "4.0.5.RELEASE",
+      "artifactory-maven-plugin.version" : "2.2.1",
+      "maven-war-plugin.version" : "2.4",
+      "tomcat7-maven-plugin.port" : "8083",
+      "maven-compiler-plugin.version" : "3.1",
+      "elo-client.version" : "8.00.040.392",
+      "project.build.sourceEncoding" : "UTF-8",
+      "junit.version" : "4.11",
+      "commons-pool.version" : "1.6",
+      "java.version" : "1.7",
+      "slf4j.version" : "1.7.5",
+      "cargo-maven2.version" : "1.4.7",
+      "opencmis.version" : "0.11.0",
+      "tomcat7-maven-plugin.version" : "2.0",
+      "commons-lang3.version" : "3.3.2",
+      "maven-release-plugin.version" : "3.1",
+      "env" : "default",
+      "commons-logging.version" : "1.1.3",
+      "commons-codec.version" : "1.9",
+      "log4j.version" : "1.2.16"
+    },
+    "id" : "com.elo.cmis:elo-cmis-commons:2.0",
+    "artifacts" : [ {
+      "type" : "jar",
+      "sha1" : "f4bdce03010d6e9178fb0e121109f1066e402b91",
+      "md5" : "cdf71e9a648794b8fcbc70206b35c379",
+      "name" : "elo-cmis-commons-2.0.jar"
+    }, {
+      "type" : "pom",
+      "sha1" : "3d5713903b1686381c0f054026b07772ae019344",
+      "md5" : "7351a05e41b5aa8202d803ad35514934",
+      "name" : "elo-cmis-commons-2.0.pom"
+    } ],
+    "dependencies" : [ {
+      "type" : "jar",
+      "sha1" : "4e031bb61df09069aeb2bffb4019e7a5034a4ee0",
+      "md5" : "3c42be5ea7cbf3635716abbb429cb90d",
+      "id" : "junit:junit:4.11",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "b1f1e1f10222b2c3e16656419477aad4f34fceb7",
+      "md5" : "5368f9e8f0f5ecbf52bcff4db4c08050",
+      "id" : "org.apache.chemistry.opencmis:chemistry-opencmis-commons-impl:0.11.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "2459455b0f2e19e7a51fc7bff4de341947d9bc57",
+      "md5" : "44167dbad9a3707a846b57ec92deb62f",
+      "id" : "org.springframework:spring-webmvc:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "6b262da268f8ad9eff941b25503a9198f0a0ac93",
+      "md5" : "3b1ececad9ebc3fbad2953ccf4a070ca",
+      "id" : "org.slf4j:slf4j-api:1.7.5",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "4db2b46d015b0f6401430b98fd5df226d23ea2d9",
+      "md5" : "f22c604d0a12134521b1f58b7f9121ce",
+      "id" : "org.apache.chemistry.opencmis:chemistry-opencmis-server-support:0.11.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "ee4db4a5f15cbdb453808c2839f08240ac231e46",
+      "md5" : "96d75a90d89ff0cb6b96282171a212de",
+      "id" : "com.sun.org.apache.xml.internal:resolver:20050927",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "d22abbbba78f7c8854fc39346cc99362272c5c90",
+      "md5" : "dfc85ee219291c252588ddd064487679",
+      "id" : "org.springframework:spring-aop:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "6ffca64fe0209a94c5a973a32e93b5eae0ac384e",
+      "md5" : "c2d46f041ac535d98ff32169beb5468d",
+      "id" : "org.jvnet.mimepull:mimepull:1.9.4",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "4e0c860c1bf18b54ccb10a3c7ab2e4d61452faff",
+      "md5" : "119be912d6fd00dd3ccf3071d520bc08",
+      "id" : "javax.xml.soap:saaj-api:1.3",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "90a3822c38ec8c996e84c16a3477ef632cbc87a3",
+      "md5" : "3128bf75a2549ebe38663401191bacab",
+      "id" : "org.apache.commons:commons-lang3:3.3.2",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "0466eab062e9d1a3ce2c4631b6d09b5e5c0cbd1b",
+      "md5" : "40d088c7b8b3f6759a40db54ce1f30e5",
+      "id" : "org.codehaus.woodstox:stax2-api:3.1.1",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "42a25dc3219429f0e5d060061f71acb49bf010a0",
+      "md5" : "6393363b47ddcbba82321110c3e07519",
+      "id" : "org.hamcrest:hamcrest-core:1.3",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "0ce1edb914c94ebc388f086c6827e8bdeec71ac2",
+      "md5" : "4d5c1693079575b362edf41500630bbd",
+      "id" : "commons-lang:commons-lang:2.6",
+      "scopes" : [ "provided" ]
+    }, {
+      "type" : "war",
+      "sha1" : "608cf7bc0667390eb8357951922a4a7ed2f44f95",
+      "md5" : "93c211d50e8a4837b1069659ac194782",
+      "id" : "org.apache.chemistry.opencmis:chemistry-opencmis-server-bindings-war:0.11.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "117dfa4aec0aa97ce079945e7deffd8bfd9ed4ab",
+      "md5" : "46f89e19a315848418d5e5b12412519a",
+      "id" : "de.elo:elo-utils:8.00.040.392",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "a0ad9319e140a1e5ddcc77f870ca67722bab8ff7",
+      "md5" : "e5b8a72a34f085b92ef54d8cd7a24a1c",
+      "id" : "org.jvnet.staxex:stax-ex:1.2",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "e4da64bb02bef8ebb174ca17747e6a6bf4a01eeb",
+      "md5" : "9e88ea3a7fd6dee8d532342d5f585adf",
+      "id" : "com.sun.xml.ws:jaxws-rt:2.1.7",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "4e0c93e61ec6acf0a3ac96e692a58d184fba1456",
+      "md5" : "2da6039d38084376f4afa0275a72ef0b",
+      "id" : "com.sun.xml.messaging.saaj:saaj-impl:1.3.3",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "7a3784c65cfa5c0553f31d000b43346feb1f4ee3",
+      "md5" : "ac7e73fcf52654c0642afdfccc7d9f57",
+      "id" : "org.codehaus.woodstox:woodstox-core-asl:4.2.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "cce94116431b5a1384d58316a4090bbe7718fd5a",
+      "md5" : "a087409735b486eeaa1161f19213587b",
+      "id" : "org.springframework:spring-core:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "5af35056b4d257e4b64b9e8069c0746e8b08629f",
+      "md5" : "04a41f0a068986f0f73485cf507c0f40",
+      "id" : "log4j:log4j:1.2.17",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "6edffc576ce104ec769d954618764f39f0f0f10d",
+      "md5" : "371e35747d6bd35e3800034bdac4150e",
+      "id" : "org.slf4j:slf4j-log4j12:1.7.5",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "d68570e722cffe2000358ce9c661a0b0bf1ebe11",
+      "md5" : "9534ce6506dc96bac3944423d804be30",
+      "id" : "javax.xml.bind:jaxb-api:2.1",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "9ce04e34240f674bc72680f8b843b1457383161a",
+      "md5" : "75615356605c8128013da9e3ac62a249",
+      "id" : "commons-codec:commons-codec:1.9",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "e6cb541461c2834bdea3eb920f1884d1eb508b50",
+      "md5" : "8ae38e87cd4f86059c0294a8fe3e0b18",
+      "id" : "javax.activation:activation:1.1",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "11e00022f109653ee0dbe16b59c26e19bd90fa08",
+      "md5" : "2b1c12d195398ecd9f19d5571e908cf5",
+      "id" : "org.springframework:spring-beans:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "4572d589699f09d866a226a14b7f4323c6d8f040",
+      "md5" : "5ca02245c829422176d23fa530e919cc",
+      "id" : "commons-pool:commons-pool:1.6",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "f6f66e966c70a83ffbdb6f17a0919eaf7c8aca7f",
+      "md5" : "92eb5aabc1b47287de53d45c086a435c",
+      "id" : "commons-logging:commons-logging:1.1.3",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "1819f6d4ab65fb33e19c492d5c5aa21396e42b3f",
+      "md5" : "4cd899fc56f9bdde6391d6b95d1198fc",
+      "id" : "org.springframework:spring-web:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "69e2546dae3895d25aeb5e70225e492d1b9bd696",
+      "md5" : "89da999f2402d204a96a92ba988e7be8",
+      "id" : "com.sun.xml.bind:jaxb-impl:2.1.11",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "83cd2cd674a217ade95a4bb83a8a14f351f48bd0",
+      "md5" : "f8f1352c52a4c6a500b597596501fc64",
+      "id" : "antlr:antlr:2.7.7",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "98cd9a4b8bb0c695c0cfcc204cf804f433851cfe",
+      "md5" : "7a6f04a59fc30dc3f691bea472ecb989",
+      "id" : "org.springframework:spring-context:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "fe8f18f2de2ace9146139fa564130fa0618598db",
+      "md5" : "37cc2e92c86fdf12558923aacfee3573",
+      "id" : "de.elo:elo-client:8.00.040.392",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "0235ba8b489512805ac13a8f9ea77a1ca5ebe3e8",
+      "md5" : "04177054e180d09e3998808efa0401c7",
+      "id" : "aopalliance:aopalliance:1.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "0b32a49501545575aba9e7cf3a08ad76f46a320c",
+      "md5" : "1bd37c8258752cff9a19ddb7912f8372",
+      "id" : "org.apache.chemistry.opencmis:chemistry-opencmis-commons-api:0.11.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "f4b8b8575fcc558768df76658192f3c0202ca22a",
+      "md5" : "f81bbfa225d404afde803263905158ff",
+      "id" : "com.sun.xml.stream.buffer:streambuffer:0.9",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "0baa82bff19059401e90e1b90020beb9c96305d7",
+      "md5" : "aa6d7c8b425df59f5f5bc98c58cfd9fc",
+      "id" : "org.antlr:antlr-runtime:3.5",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "d7ddbc320c31c15cb3612ed64607e181c3b2d851",
+      "md5" : "754843a48a03dca26cab1474445780f7",
+      "id" : "org.springframework:spring-expression:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "59ec8083721eae215c6f3caee944c410d2be34de",
+      "md5" : "b58ca53e518a92a1991eb63b61917582",
+      "id" : "org.antlr:stringtemplate:3.2.1",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "3fc542fe8bb8164e8d3e840fe7403bc0518053c0",
+      "md5" : "f6cf3fde0b992589ed3d87fa9674015f",
+      "id" : "javax.servlet:servlet-api:2.4",
+      "scopes" : [ "provided" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "e380081fb65c35383e76f29c1fded9e4dcbac675",
+      "md5" : "0121652b31d27cdb3cd1fae05f5359d3",
+      "id" : "org.apache.chemistry.opencmis:chemistry-opencmis-server-bindings:0.11.0",
+      "scopes" : [ "provided" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "d6337b0de8b25e53e81b922352fbea9f9f57ba0b",
+      "md5" : "7d18b63063580284c3f5734081fdc99f",
+      "id" : "javax.xml.stream:stax-api:1.0-2",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "204ea80c6a85f009c90bddda8c93c17644702022",
+      "md5" : "f3a03da3f160081c75caac82a3515f91",
+      "id" : "javax.xml.ws:jaxws-api:2.1",
+      "scopes" : [ "compile" ]
+    } ]
+  }, {
+    "properties" : {
+      "cargo-maven2.port" : "8082",
+      "spring.version" : "4.0.5.RELEASE",
+      "artifactory-maven-plugin.version" : "2.2.1",
+      "maven-war-plugin.version" : "2.4",
+      "tomcat7-maven-plugin.port" : "8083",
+      "maven-compiler-plugin.version" : "3.1",
+      "elo-client.version" : "8.00.040.392",
+      "project.build.sourceEncoding" : "UTF-8",
+      "junit.version" : "4.11",
+      "commons-pool.version" : "1.6",
+      "java.version" : "1.7",
+      "slf4j.version" : "1.7.5",
+      "cargo-maven2.version" : "1.4.7",
+      "opencmis.version" : "0.11.0",
+      "tomcat7-maven-plugin.version" : "2.0",
+      "commons-lang3.version" : "3.3.2",
+      "maven-release-plugin.version" : "3.1",
+      "env" : "default",
+      "commons-logging.version" : "1.1.3",
+      "commons-codec.version" : "1.9",
+      "log4j.version" : "1.2.16"
+    },
+    "id" : "com.elo.cmis:elo-cmis-server:2.0",
+    "artifacts" : [ {
+      "type" : "war",
+      "sha1" : "cd34e8db0fd4fdd09ebd17d57ebe980a35f11939",
+      "md5" : "82340b25050d9f1a23d80bd4e36c6313",
+      "name" : "elo-cmis-server-2.0.war"
+    }, {
+      "type" : "pom",
+      "sha1" : "54b255c09e7bbd5327722dcca64a54af67799506",
+      "md5" : "47ee98bdb949f04d83018dda2e08b65b",
+      "name" : "elo-cmis-server-2.0.pom"
+    } ],
+    "dependencies" : [ {
+      "type" : "jar",
+      "sha1" : "4e031bb61df09069aeb2bffb4019e7a5034a4ee0",
+      "md5" : "3c42be5ea7cbf3635716abbb429cb90d",
+      "id" : "junit:junit:4.11",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "b1f1e1f10222b2c3e16656419477aad4f34fceb7",
+      "md5" : "5368f9e8f0f5ecbf52bcff4db4c08050",
+      "id" : "org.apache.chemistry.opencmis:chemistry-opencmis-commons-impl:0.11.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "2459455b0f2e19e7a51fc7bff4de341947d9bc57",
+      "md5" : "44167dbad9a3707a846b57ec92deb62f",
+      "id" : "org.springframework:spring-webmvc:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "6b262da268f8ad9eff941b25503a9198f0a0ac93",
+      "md5" : "3b1ececad9ebc3fbad2953ccf4a070ca",
+      "id" : "org.slf4j:slf4j-api:1.7.5",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "4db2b46d015b0f6401430b98fd5df226d23ea2d9",
+      "md5" : "f22c604d0a12134521b1f58b7f9121ce",
+      "id" : "org.apache.chemistry.opencmis:chemistry-opencmis-server-support:0.11.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "ee4db4a5f15cbdb453808c2839f08240ac231e46",
+      "md5" : "96d75a90d89ff0cb6b96282171a212de",
+      "id" : "com.sun.org.apache.xml.internal:resolver:20050927",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "d22abbbba78f7c8854fc39346cc99362272c5c90",
+      "md5" : "dfc85ee219291c252588ddd064487679",
+      "id" : "org.springframework:spring-aop:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "6ffca64fe0209a94c5a973a32e93b5eae0ac384e",
+      "md5" : "c2d46f041ac535d98ff32169beb5468d",
+      "id" : "org.jvnet.mimepull:mimepull:1.9.4",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "4e0c860c1bf18b54ccb10a3c7ab2e4d61452faff",
+      "md5" : "119be912d6fd00dd3ccf3071d520bc08",
+      "id" : "javax.xml.soap:saaj-api:1.3",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "90a3822c38ec8c996e84c16a3477ef632cbc87a3",
+      "md5" : "3128bf75a2549ebe38663401191bacab",
+      "id" : "org.apache.commons:commons-lang3:3.3.2",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "0466eab062e9d1a3ce2c4631b6d09b5e5c0cbd1b",
+      "md5" : "40d088c7b8b3f6759a40db54ce1f30e5",
+      "id" : "org.codehaus.woodstox:stax2-api:3.1.1",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "42a25dc3219429f0e5d060061f71acb49bf010a0",
+      "md5" : "6393363b47ddcbba82321110c3e07519",
+      "id" : "org.hamcrest:hamcrest-core:1.3",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "0ce1edb914c94ebc388f086c6827e8bdeec71ac2",
+      "md5" : "4d5c1693079575b362edf41500630bbd",
+      "id" : "commons-lang:commons-lang:2.6",
+      "scopes" : [ "provided" ]
+    }, {
+      "type" : "war",
+      "sha1" : "608cf7bc0667390eb8357951922a4a7ed2f44f95",
+      "md5" : "93c211d50e8a4837b1069659ac194782",
+      "id" : "org.apache.chemistry.opencmis:chemistry-opencmis-server-bindings-war:0.11.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "117dfa4aec0aa97ce079945e7deffd8bfd9ed4ab",
+      "md5" : "46f89e19a315848418d5e5b12412519a",
+      "id" : "de.elo:elo-utils:8.00.040.392",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "a0ad9319e140a1e5ddcc77f870ca67722bab8ff7",
+      "md5" : "e5b8a72a34f085b92ef54d8cd7a24a1c",
+      "id" : "org.jvnet.staxex:stax-ex:1.2",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "f4bdce03010d6e9178fb0e121109f1066e402b91",
+      "md5" : "cdf71e9a648794b8fcbc70206b35c379",
+      "id" : "com.elo.cmis:elo-cmis-commons:2.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "e4da64bb02bef8ebb174ca17747e6a6bf4a01eeb",
+      "md5" : "9e88ea3a7fd6dee8d532342d5f585adf",
+      "id" : "com.sun.xml.ws:jaxws-rt:2.1.7",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "4e0c93e61ec6acf0a3ac96e692a58d184fba1456",
+      "md5" : "2da6039d38084376f4afa0275a72ef0b",
+      "id" : "com.sun.xml.messaging.saaj:saaj-impl:1.3.3",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "7a3784c65cfa5c0553f31d000b43346feb1f4ee3",
+      "md5" : "ac7e73fcf52654c0642afdfccc7d9f57",
+      "id" : "org.codehaus.woodstox:woodstox-core-asl:4.2.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "cce94116431b5a1384d58316a4090bbe7718fd5a",
+      "md5" : "a087409735b486eeaa1161f19213587b",
+      "id" : "org.springframework:spring-core:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "5af35056b4d257e4b64b9e8069c0746e8b08629f",
+      "md5" : "04a41f0a068986f0f73485cf507c0f40",
+      "id" : "log4j:log4j:1.2.17",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "6edffc576ce104ec769d954618764f39f0f0f10d",
+      "md5" : "371e35747d6bd35e3800034bdac4150e",
+      "id" : "org.slf4j:slf4j-log4j12:1.7.5",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "d68570e722cffe2000358ce9c661a0b0bf1ebe11",
+      "md5" : "9534ce6506dc96bac3944423d804be30",
+      "id" : "javax.xml.bind:jaxb-api:2.1",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "9ce04e34240f674bc72680f8b843b1457383161a",
+      "md5" : "75615356605c8128013da9e3ac62a249",
+      "id" : "commons-codec:commons-codec:1.9",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "e6cb541461c2834bdea3eb920f1884d1eb508b50",
+      "md5" : "8ae38e87cd4f86059c0294a8fe3e0b18",
+      "id" : "javax.activation:activation:1.1",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "11e00022f109653ee0dbe16b59c26e19bd90fa08",
+      "md5" : "2b1c12d195398ecd9f19d5571e908cf5",
+      "id" : "org.springframework:spring-beans:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "4572d589699f09d866a226a14b7f4323c6d8f040",
+      "md5" : "5ca02245c829422176d23fa530e919cc",
+      "id" : "commons-pool:commons-pool:1.6",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "f6f66e966c70a83ffbdb6f17a0919eaf7c8aca7f",
+      "md5" : "92eb5aabc1b47287de53d45c086a435c",
+      "id" : "commons-logging:commons-logging:1.1.3",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "1819f6d4ab65fb33e19c492d5c5aa21396e42b3f",
+      "md5" : "4cd899fc56f9bdde6391d6b95d1198fc",
+      "id" : "org.springframework:spring-web:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "69e2546dae3895d25aeb5e70225e492d1b9bd696",
+      "md5" : "89da999f2402d204a96a92ba988e7be8",
+      "id" : "com.sun.xml.bind:jaxb-impl:2.1.11",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "83cd2cd674a217ade95a4bb83a8a14f351f48bd0",
+      "md5" : "f8f1352c52a4c6a500b597596501fc64",
+      "id" : "antlr:antlr:2.7.7",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "98cd9a4b8bb0c695c0cfcc204cf804f433851cfe",
+      "md5" : "7a6f04a59fc30dc3f691bea472ecb989",
+      "id" : "org.springframework:spring-context:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "fe8f18f2de2ace9146139fa564130fa0618598db",
+      "md5" : "37cc2e92c86fdf12558923aacfee3573",
+      "id" : "de.elo:elo-client:8.00.040.392",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "0235ba8b489512805ac13a8f9ea77a1ca5ebe3e8",
+      "md5" : "04177054e180d09e3998808efa0401c7",
+      "id" : "aopalliance:aopalliance:1.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "0b32a49501545575aba9e7cf3a08ad76f46a320c",
+      "md5" : "1bd37c8258752cff9a19ddb7912f8372",
+      "id" : "org.apache.chemistry.opencmis:chemistry-opencmis-commons-api:0.11.0",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "f4b8b8575fcc558768df76658192f3c0202ca22a",
+      "md5" : "f81bbfa225d404afde803263905158ff",
+      "id" : "com.sun.xml.stream.buffer:streambuffer:0.9",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "0baa82bff19059401e90e1b90020beb9c96305d7",
+      "md5" : "aa6d7c8b425df59f5f5bc98c58cfd9fc",
+      "id" : "org.antlr:antlr-runtime:3.5",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "d7ddbc320c31c15cb3612ed64607e181c3b2d851",
+      "md5" : "754843a48a03dca26cab1474445780f7",
+      "id" : "org.springframework:spring-expression:4.0.5.RELEASE",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "59ec8083721eae215c6f3caee944c410d2be34de",
+      "md5" : "b58ca53e518a92a1991eb63b61917582",
+      "id" : "org.antlr:stringtemplate:3.2.1",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "3fc542fe8bb8164e8d3e840fe7403bc0518053c0",
+      "md5" : "f6cf3fde0b992589ed3d87fa9674015f",
+      "id" : "javax.servlet:servlet-api:2.4",
+      "scopes" : [ "provided" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "e380081fb65c35383e76f29c1fded9e4dcbac675",
+      "md5" : "0121652b31d27cdb3cd1fae05f5359d3",
+      "id" : "org.apache.chemistry.opencmis:chemistry-opencmis-server-bindings:0.11.0",
+      "scopes" : [ "provided" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "d6337b0de8b25e53e81b922352fbea9f9f57ba0b",
+      "md5" : "7d18b63063580284c3f5734081fdc99f",
+      "id" : "javax.xml.stream:stax-api:1.0-2",
+      "scopes" : [ "compile" ]
+    }, {
+      "type" : "jar",
+      "sha1" : "204ea80c6a85f009c90bddda8c93c17644702022",
+      "md5" : "f3a03da3f160081c75caac82a3515f91",
+      "id" : "javax.xml.ws:jaxws-api:2.1",
+      "scopes" : [ "compile" ]
+    } ]
+  } ],
+  "governance" : {
+    "blackDuckProperties" : {
+      "runChecks" : false,
+      "includePublishedArtifacts" : false,
+      "autoCreateMissingComponentRequests" : false,
+      "autoDiscardStaleComponentRequests" : false
+    }
+  }
+}

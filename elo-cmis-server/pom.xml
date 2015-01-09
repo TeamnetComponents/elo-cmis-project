@@ -1,0 +1,152 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>elo-cmis-project</artifactId>
+        <groupId>com.elo.cmis</groupId>
+        <version>2.0</version>
+    </parent>
+
+    <groupId>com.elo.cmis</groupId>
+    <artifactId>elo-cmis-server</artifactId>
+    <packaging>war</packaging>
+
+    <name>elo-cmis-server</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <finalName>elo-cmis-server</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <inherited>true</inherited>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>${maven-war-plugin.version}</version>
+                <configuration>
+                    <overlays>
+                        <overlay></overlay>
+                        <overlay>
+                            <groupId>org.apache.chemistry.opencmis</groupId>
+                            <artifactId>chemistry-opencmis-server-bindings-war</artifactId>
+                            <excludes>
+                                <!-- exclude everything you don't need -->
+                                <exclude>index.html</exclude>
+                                <!-- default index page -->
+                                <exclude>css/**</exclude>
+                                <!-- CSS for the default index page -->
+                                <exclude>images/**</exclude>
+                                <!-- images for the default index page -->
+                                <exclude>web/**</exclude>
+                                <!-- sample JavaScript application -->
+                                <exclude>WEB-INF/classes/sample-repository.properties</exclude>
+                                <!-- sample server properties file -->
+                                <exclude>WEB-INF/token/**</exclude>
+                                <!-- sample Browser Binding token implementation -->
+                                <exclude>WEB-INF/websphere/**</exclude>
+                                <!-- WebSphere specfic files -->
+                            </excludes>
+                        </overlay>
+                    </overlays>
+                </configuration>
+            </plugin>
+
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-eclipse-plugin</artifactId>-->
+                <!--<version>2.9</version>-->
+                <!--<configuration>-->
+                    <!--<wtpversion>2.0</wtpversion>-->
+                    <!--<wtpContextName>server</wtpContextName>-->
+                    <!--<downloadSources>true</downloadSources>-->
+                    <!--<downloadJavadocs>true</downloadJavadocs>-->
+                    <!--<linkedResources>-->
+                        <!--<linkedResource>-->
+                            <!--<name>src/main/webapp/WEB-INF/sun-jaxws.xml</name>-->
+                            <!--<type>1</type>-->
+                            <!--<location>PROJECT_LOC/target/${project.build.finalName}/WEB-INF/sun-jaxws.xml</location>-->
+                        <!--</linkedResource>-->
+                        <!--<linkedResource>-->
+                            <!--<name>src/main/webapp/WEB-INF/web.xml</name>-->
+                            <!--<type>1</type>-->
+                            <!--<location>PROJECT_LOC/target/${project.build.finalName}/WEB-INF/web.xml</location>-->
+                        <!--</linkedResource>-->
+                        <!--<linkedResource>-->
+                            <!--<name>src/main/webapp/WEB-INF/cmis10</name>-->
+                            <!--<type>2</type>-->
+                            <!--<location>PROJECT_LOC/target/${project.build.finalName}/WEB-INF/cmis10</location>-->
+                        <!--</linkedResource>-->
+                        <!--<linkedResource>-->
+                            <!--<name>src/main/webapp/WEB-INF/cmis11</name>-->
+                            <!--<type>2</type>-->
+                            <!--<location>PROJECT_LOC/target/${project.build.finalName}/WEB-INF/cmis11</location>-->
+                        <!--</linkedResource>-->
+                    <!--</linkedResources>-->
+                <!--</configuration>-->
+            <!--</plugin>-->
+
+            <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven2-plugin</artifactId>
+                <version>${cargo-maven2.version}</version>
+                <configuration>
+                    <configuration>
+                        <properties>
+                            <cargo.servlet.port>${cargo-maven2.port}</cargo.servlet.port>
+                        </properties>
+                    </configuration>
+                    <container>
+                        <containerId>jetty8x</containerId>
+                        <type>embedded</type>
+                    </container>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>${tomcat7-maven-plugin.version}</version>
+                <configuration>
+                    <path>/elo-cmis-server</path>
+                    <port>${tomcat7-maven-plugin.port}</port>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <resources>
+            <!--
+            The application.info file is used to get the default application name and application version when creating
+            the connection factory to ELO server.
+            -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/application.info</include>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
+
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.elo.cmis</groupId>
+            <artifactId>elo-cmis-commons</artifactId>
+            <version>2.0</version>
+        </dependency>
+    </dependencies>
+</project>
