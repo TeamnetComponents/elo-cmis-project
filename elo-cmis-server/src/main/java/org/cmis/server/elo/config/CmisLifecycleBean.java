@@ -97,11 +97,12 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
                     streamProperties = new FileInputStream(configurationServiceFileName);
                 } else {
                     //este config intern
-                    configurationServiceFileName = "/profiles" + (configurationProfileName.startsWith("/") ? "" : "/") + configurationProfileName + (configurationServiceFileName.startsWith("/") ? "" : "/") + configurationServiceFileName;
-                    streamProperties = this.getClass().getResourceAsStream(configFilename);
+                    configurationServiceFileName = "/WEB-INF/classes/profiles" + (configurationProfileName.startsWith("/") ? "" : "/") + configurationProfileName + (configurationServiceFileName.startsWith("/") ? "" : "/") + configurationServiceFileName;
+                    streamProperties = servletContext.getResourceAsStream(configurationServiceFileName);
                 }
 
             } catch (Exception e) {
+                e.printStackTrace();
             }
             if (streamProperties == null) {
                 throw new IllegalStateException("Cannot find configuration for file <" + configurationServiceFileName + ">!");

@@ -18,7 +18,7 @@ Links:
 * [Apache Chemistry - OpenCMIS Server Framework] (http://chemistry.apache.org/java/developing/dev-server.html)
 
 ##2. Download
-You can download the release files from the [artifactory repository](http://artifactory/).
+You can download the release files from the [artifactory repository](http://tni-hq-artifactory/simple/tn-components/com/elo/cmis/).
 
 ##3. Configuration
 This chapter describes the required configurations for starting with success a **CMIS Elo Server** application instance.
