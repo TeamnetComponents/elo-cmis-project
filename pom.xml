@@ -38,7 +38,7 @@
         <tomcat7-maven-plugin.port>8083</tomcat7-maven-plugin.port>
 
         <!-- OpenCMIS version -->
-        <opencmis.version>0.11.0</opencmis.version>
+        <opencmis.version>0.12.0</opencmis.version>
 
         <!-- ELO version -->
         <elo-client.version>8.00.040.392</elo-client.version>
@@ -105,7 +105,7 @@
                                 <version>${project.version}</version>
                             </deployProperties>
                             <publisher>
-                                <contextUrl>http://tni-hq-artifactory</contextUrl>
+                                <contextUrl>hxtxtxp://tni-hq-artifactory</contextUrl>
                                 <username>lucian.dragomir</username>
                                 <password>lucian1234</password>
                                 <repoKey>tn-components</repoKey>

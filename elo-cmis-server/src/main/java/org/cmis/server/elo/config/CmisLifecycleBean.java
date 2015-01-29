@@ -3,11 +3,14 @@ package org.cmis.server.elo.config;
 import org.apache.chemistry.opencmis.commons.impl.IOUtils;
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
 import org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.PropertyConfigurator;
+import org.cmis.util.TemplateEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ServletContextAware;
 
@@ -28,17 +31,20 @@ import java.util.Properties;
  */
 @Component
 public class CmisLifecycleBean implements ServletContextAware, InitializingBean, DisposableBean {
-    private static String ENVIRONMENT_PARAMETER_CONFIGURATION_PROFILE = "elo.cmis.configuration.profile";
-    private static String ENVIRONMENT_PARAMETER_CONFIGURATION_SERVER = "elo.cmis.configuration.server";
-    private static String ENVIRONMENT_PARAMETER_CONFIGURATION_LOG4J = "elo.cmis.configuration.log4j";
+    private static String SERVLET_CODE = "servletCode";
+    private static String ENVIRONMENT_PARAMETER_CONFIGURATION_PROFILE = "elo.cmis.${" + SERVLET_CODE + "}.configuration.profile";
+    private static String ENVIRONMENT_PARAMETER_CONFIGURATION_SERVER = "elo.cmis.${" + SERVLET_CODE + "}.configuration.server";
+    private static String ENVIRONMENT_PARAMETER_CONFIGURATION_LOG4J = "elo.cmis.${" + SERVLET_CODE + "}.configuration.log4j";
 
     @Autowired
     private ServletContext servletContext;
     @Autowired
     private CmisServiceFactory factory;
-    @Value("${config.filename}")
-    private String configFilename;
-    private String configFilenameAbsolute;
+    //@Value("${config.filename}")
+    //private String configFilename;
+    //private String configFilenameAbsolute;
+
+    private String servletCode;
 
     @Override
     public void setServletContext(ServletContext servletContext) {
@@ -58,6 +64,15 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
         }
     }
 
+    private String getSystemPropertyName(String propertyTemplate) {
+        return TemplateEngine.getInstance().getValueFromTemplate(propertyTemplate, SERVLET_CODE, servletCode);
+    }
+
+    private String getSystemPropertyValue(String propertyTemplate) {
+        String propertyName = getSystemPropertyName(propertyTemplate);
+        //TemplateEngine.getInstance().getValueFromTemplate(propertyTemplate, SERVLET_CODE, servletCode);
+        return System.getProperty(propertyName);
+    }
 
     /**
      * Load properties
@@ -67,10 +82,23 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
     private Map<String, String> readProperties() {
         Map<String, String> parameters = new HashMap<>();
         InputStream streamProperties = null;
+        String configurationProfileName = null;
+        String configurationServiceFileName = null;
+        String configurationLog4JFileName = null;
+        String environmentPropertyServletCode = null;
+        this.servletCode = "servlet";
         try {
-            String configurationProfileName = System.getProperty(ENVIRONMENT_PARAMETER_CONFIGURATION_PROFILE);
-            String configurationServiceFileName = System.getProperty(ENVIRONMENT_PARAMETER_CONFIGURATION_SERVER);
-            String configurationLog4JFileName = System.getProperty(ENVIRONMENT_PARAMETER_CONFIGURATION_LOG4J);
+            String servletContextRealPath = servletContext.getRealPath("/");
+            environmentPropertyServletCode = servletContextRealPath.replace(":", "").replace("/", ".").replace("\\", ".");
+            if (environmentPropertyServletCode.endsWith(".")) {
+                environmentPropertyServletCode = environmentPropertyServletCode.substring(0, environmentPropertyServletCode.length() - 1);
+            }
+            if (StringUtils.isNotEmpty(getSystemPropertyValue(environmentPropertyServletCode))) {
+                this.servletCode = getSystemPropertyValue(environmentPropertyServletCode);
+            }
+            configurationProfileName = getSystemPropertyValue(ENVIRONMENT_PARAMETER_CONFIGURATION_PROFILE);
+            configurationServiceFileName = getSystemPropertyValue(ENVIRONMENT_PARAMETER_CONFIGURATION_SERVER);
+            configurationLog4JFileName = getSystemPropertyValue(ENVIRONMENT_PARAMETER_CONFIGURATION_LOG4J);
 
             //get logging configuration
             try {
@@ -80,7 +108,7 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
                 } else {
                     //este config intern
                     if (configurationLog4JFileName != null) {
-                        configurationLog4JFileName = "/profiles" + (configurationProfileName.startsWith("/") ? "" : "/") + configurationProfileName + (configurationLog4JFileName.startsWith("/") ? "" : "/") + configurationLog4JFileName;
+                        configurationLog4JFileName = servletContextRealPath + "/profiles" + (configurationProfileName.startsWith("/") ? "" : "/") + configurationProfileName + (configurationLog4JFileName.startsWith("/") ? "" : "/") + configurationLog4JFileName;
                     }
                 }
                 if (configurationLog4JFileName != null) {
@@ -127,6 +155,21 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        System.out.println("Starting CMIS enviroment  <" + environmentPropertyServletCode + ">");
+
+        Logger LOG = LoggerFactory.getLogger(CmisLifecycleBean.class);
+        LOG.info("Starting CMIS enviroment  <" + environmentPropertyServletCode + ">");
+        LOG.info("Configuration:");
+        LOG.info("Instance name:" + this.servletCode);
+        LOG.info("    -D" + environmentPropertyServletCode + "=" + this.servletCode);
+        LOG.info("Profile: " + configurationProfileName);
+        LOG.info("    -D" + getSystemPropertyName(ENVIRONMENT_PARAMETER_CONFIGURATION_PROFILE) + "=" + configurationProfileName);
+        LOG.info("Service configuration: " + configurationServiceFileName);
+        LOG.info("    -D" + getSystemPropertyName(ENVIRONMENT_PARAMETER_CONFIGURATION_SERVER) + "=" + configurationServiceFileName);
+        LOG.info("Log4j configuration: " + configurationLog4JFileName);
+        LOG.info("    -D" + getSystemPropertyName(ENVIRONMENT_PARAMETER_CONFIGURATION_LOG4J) + "=" + configurationLog4JFileName);
+
         return parameters;
     }
 

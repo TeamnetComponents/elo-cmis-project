@@ -275,14 +275,15 @@ public class EloCmisService extends AbstractCmisService implements CallContextAw
 
     //TODO
     @Override
-    public FailedToDeleteData deleteTree(String repositoryId, String folderId, Boolean allVersions, UnfileObject unfileObjects, Boolean continueOnFailure, ExtensionsData extension) {
+     public FailedToDeleteData deleteTree(String repositoryId, String folderId, Boolean allVersions, UnfileObject unfileObjects, Boolean continueOnFailure, ExtensionsData extension) {
         return super.deleteTree(repositoryId, folderId, allVersions, unfileObjects, continueOnFailure, extension);
     }
 
     //TODO
     @Override
     public void deleteObjectOrCancelCheckOut(String repositoryId, String objectId, Boolean allVersions, ExtensionsData extension) {
-
+        getEloCmisRepository(repositoryId, extension)
+                .deleteObject(objectId, allVersions);
     }
 
     //TODO

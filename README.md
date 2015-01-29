@@ -18,7 +18,7 @@ Links:
 * [Apache Chemistry - OpenCMIS Server Framework] (http://chemistry.apache.org/java/developing/dev-server.html)
 
 ##2. Download
-You can download the release files from the [artifactory repository](http://tni-hq-artifactory/simple/tn-components/com/elo/cmis/).
+You can download the release files from the <a href="http://tni-hq-artifactory/simple/tn-components/com/elo/cmis/elo-cmis-server/" target="_blank">artifactory repository</a>.
 
 ##3. Configuration
 This chapter describes the required configurations for starting with success a **CMIS Elo Server** application instance.
@@ -29,11 +29,9 @@ The application allows the resource configuration files to be **embedded in the 
 Two resource files must be created: 
 
 * **log4j configuration file** - this is a log4g configuration file used by the application 
-* **server configuration file** - this file contains all configurations required to connect to ELO server and the configuration of pools keeping the connections to ELO server
+* **[server configuration file](/documentation/elo-cmis-properties.example.md)** - this file contains all configurations required to connect to ELO server and the configuration of pools keeping the connections to ELO server
 
 In case of embedding the configuration resources in the .war file they must be located in /WEB-INF/classes/profiles/{profileName} path.
-
-[elo-cmis-properties.example.md](/documentation/elo-cmis-properties.example.md)
 
 ###3.2 Environment variables
 
@@ -84,4 +82,30 @@ org.apache.chemistry.opencmis.password=<password>
 org.apache.chemistry.opencmis.binding.compression=true
 org.apache.chemistry.opencmis.binding.cookies=true
 ```
+
+
+##4 Demo environment
+
+The following environment was created as demo instance for exemplifying the configurations presented above.
+
+Below are the relevant links to the demo environment:
+
+<b>ELO DMS Server</b>
+<a href="http://sol-w2k8-04:8080/ig2-elo2/pages/startup.jsp" target="_blank">Elo Web Client</a>
+<a href="http://sol-w2k8-04:8080/AdminConsole/" target="_blank">Elo Admin Console</a>
+
+<b>Apache Chemistry Workbench</b>
+Please download the java application from the following link <a href="http://sol-w2k8-04:8080/AdminConsole/" target="_blank">Apache Chemistry Workbench</a>
+
+After downloading it, start and send the following connection configuration: 
+ 
+``` 
+org.apache.chemistry.opencmis.binding.spi.type=browser
+org.apache.chemistry.opencmis.binding.browser.url=http://<server_name>:<server_port>/<application_name ... can be elo-cmis-server>/browser
+org.apache.chemistry.opencmis.user=<user>
+org.apache.chemistry.opencmis.password=<password>
+org.apache.chemistry.opencmis.binding.compression=true
+org.apache.chemistry.opencmis.binding.cookies=true
+```
+ 
 
