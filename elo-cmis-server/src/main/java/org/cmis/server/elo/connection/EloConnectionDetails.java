@@ -44,7 +44,7 @@ public class EloConnectionDetails {
     public static final String ELO_CONNECTION_FACTORY_CONNECTION_CLIENT_TIMEZONE = "elo.connection.factory.connection.client.timeZone";
 
 
-    private static final Logger LOG = LoggerFactory.getLogger(EloConnectionDetails.class);
+    //private static final Logger LOG = LoggerFactory.getLogger(EloConnectionDetails.class);
     private static final String AUTHENTICATION_TYPE_SERVER_APPLICATION = "SERVER_APPLICATION";
 
     private EloCmisConnectionManager eloCmisConnectionManager;
@@ -59,6 +59,15 @@ public class EloConnectionDetails {
     public EloConnectionDetails(EloCmisConnectionManager eloCmisConnectionManager) {
         this(eloCmisConnectionManager, null);
     }
+
+    private static Logger getLogger() {
+        return getLogger(EloConnectionDetails.class);
+    }
+
+    private static Logger getLogger(Class clazz) {
+        return LoggerFactory.getLogger(clazz);
+    }
+
 
     public EloConnectionDetails(EloCmisConnectionManager eloCmisConnectionManager, CallContext callContext) {
         //contextual connection using credentials provided when connecting to elo-cmis-server
@@ -150,39 +159,62 @@ public class EloConnectionDetails {
 
     public IXConnection createConnection(IXConnFactory ixConnFactory) throws de.elo.utils.net.RemoteException {
         IXConnection ixConnection = null;
-        if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(AUTHENTICATION_TYPE_SERVER_APPLICATION)) {
-            ixConnection = ixConnFactory.create(
-                    this.clientInfo,
-                    (String) this.detailMap.get(ELO_CONNECTION_FACTORY_CONNECTION_APP_USER),
-                    (String) this.detailMap.get(ELO_CONNECTION_FACTORY_CONNECTION_APP_PASSWORD),
-                    getComputerName(),
-                    "");
-        } else if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.BASIC.name())) {
-            ixConnection = ixConnFactory.create(
-                    this.clientInfo,
-                    (String) this.detailMap.get(USER),
-                    (String) this.detailMap.get(PASSWORD),
-                    getComputerName(),
-                    "");
-        } else if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.AS.name()) ||
-                ((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.BASIC_AS.name())) {
-            ixConnection = ixConnFactory.create(
-                    this.clientInfo,
-                    (String) this.detailMap.get(USER),
-                    (String) this.detailMap.get(PASSWORD),
-                    getComputerName(),
-                    (String) this.detailMap.get(USER_AS));
-        } else if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.TICKET.name())) {
-            ixConnection = ixConnFactory.createFromTicket(this.clientInfo);
-        } else if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.KERBEROS.name())) {
-            ixConnection = ixConnFactory.createKrb(this.clientInfo,
-                    (String) this.detailMap.get(KERBEROS_REALM),
-                    (String) this.detailMap.get(KERBEROS_KDC),
-                    (String) this.detailMap.get(KERBEROS_PRINCIPAL),
-                    getComputerName()
-            );
-        } else {
-            throw new de.elo.utils.net.RemoteException("Authentication type \"" + String.valueOf(detailMap.get(AUTHENTICATION_TYPE)) + "\" not supported");
+        String computerName = getComputerName();
+
+        getLogger().debug("Create ELO connection with the following details:");
+        getLogger().debug("Authentication Type: " + ((String) detailMap.get(AUTHENTICATION_TYPE)));
+        getLogger().debug("Computer Name: " + computerName);
+
+        try {
+            if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(AUTHENTICATION_TYPE_SERVER_APPLICATION)) {
+                getLogger().debug("User: " + (String) this.detailMap.get(ELO_CONNECTION_FACTORY_CONNECTION_APP_USER));
+                getLogger().debug("Password: " + (String) this.detailMap.get(ELO_CONNECTION_FACTORY_CONNECTION_APP_PASSWORD));
+                ixConnection = ixConnFactory.create(
+                        this.clientInfo,
+                        (String) this.detailMap.get(ELO_CONNECTION_FACTORY_CONNECTION_APP_USER),
+                        (String) this.detailMap.get(ELO_CONNECTION_FACTORY_CONNECTION_APP_PASSWORD),
+                        computerName,
+                        "");
+            } else if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.BASIC.name())) {
+                getLogger().debug("User: " + (String) this.detailMap.get(USER));
+                getLogger().debug("Password: " + (String) this.detailMap.get(PASSWORD));
+                ixConnection = ixConnFactory.create(
+                        this.clientInfo,
+                        (String) this.detailMap.get(USER),
+                        (String) this.detailMap.get(PASSWORD),
+                        computerName,
+                        "");
+            } else if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.AS.name()) ||
+                    ((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.BASIC_AS.name())) {
+                getLogger().debug("User: " + (String) this.detailMap.get(USER));
+                getLogger().debug("Password: " + (String) this.detailMap.get(PASSWORD));
+                getLogger().debug("UserAs: " + (String) this.detailMap.get(USER_AS));
+                ixConnection = ixConnFactory.create(
+                        this.clientInfo,
+                        (String) this.detailMap.get(USER),
+                        (String) this.detailMap.get(PASSWORD),
+                        computerName,
+                        (String) this.detailMap.get(USER_AS));
+            } else if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.TICKET.name())) {
+                ixConnection = ixConnFactory.createFromTicket(this.clientInfo);
+            } else if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.KERBEROS.name())) {
+                getLogger().debug("Realm: " + (String) this.detailMap.get(KERBEROS_REALM));
+                getLogger().debug("KDC: " + (String) this.detailMap.get(KERBEROS_KDC));
+                getLogger().debug("Principal: " + (String) this.detailMap.get(KERBEROS_PRINCIPAL));
+                ixConnection = ixConnFactory.createKrb(this.clientInfo,
+                        (String) this.detailMap.get(KERBEROS_REALM),
+                        (String) this.detailMap.get(KERBEROS_KDC),
+                        (String) this.detailMap.get(KERBEROS_PRINCIPAL),
+                        computerName
+                );
+            } else {
+                throw new de.elo.utils.net.RemoteException("Authentication type \"" + String.valueOf(detailMap.get(AUTHENTICATION_TYPE)) + "\" not supported");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            getLogger().debug("Connection error: " + e.toString());
+            getLogger().error("Connection error: " + e.toString());
+            throw e;
         }
         return ixConnection;
     }

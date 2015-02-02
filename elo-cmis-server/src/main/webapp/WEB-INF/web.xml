@@ -22,7 +22,9 @@
     <listener>
         <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
     </listener>
-    
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
     <context-param>
         <param-name>contextClass</param-name>
         <param-value>
@@ -33,9 +35,7 @@
         <param-name>contextConfigLocation</param-name>
         <param-value>org.cmis.config</param-value>
     </context-param>
-    <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
+
     <servlet>
         <servlet-name>log4j-init</servlet-name>
         <servlet-class>org.cmis.config.Log4JConfig</servlet-class>
@@ -67,7 +67,8 @@
         <servlet-class>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</servlet-class>
         <init-param>
             <param-name>callContextHandler</param-name>
-            <param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
+            <!--<param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>-->
+            <param-value>org.cmis.server.elo.EloCmisAuthCallContextHandler</param-value>
         </init-param>
         <init-param>
             <param-name>cmisVersion</param-name>
@@ -81,7 +82,8 @@
         <servlet-class>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</servlet-class>
         <init-param>
             <param-name>callContextHandler</param-name>
-            <param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
+            <!--<param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>-->
+            <param-value>org.cmis.server.elo.EloCmisAuthCallContextHandler</param-value>
         </init-param>
         <init-param>
             <param-name>cmisVersion</param-name>
@@ -95,7 +97,8 @@
         <servlet-class>org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet</servlet-class>
         <init-param>
             <param-name>callContextHandler</param-name>
-            <param-value>org.cmis.server.elo.EloCmisCallContextHandler</param-value>
+            <!--<param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>-->
+            <param-value>org.cmis.server.elo.EloCmisAuthCallContextHandler</param-value>
         </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>

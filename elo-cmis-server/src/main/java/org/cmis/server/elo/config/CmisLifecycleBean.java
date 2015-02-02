@@ -93,6 +93,9 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
             if (environmentPropertyServletCode.endsWith(".")) {
                 environmentPropertyServletCode = environmentPropertyServletCode.substring(0, environmentPropertyServletCode.length() - 1);
             }
+            if (environmentPropertyServletCode.startsWith(".")) {
+                environmentPropertyServletCode = environmentPropertyServletCode.substring(1);
+            }
             if (StringUtils.isNotEmpty(getSystemPropertyValue(environmentPropertyServletCode))) {
                 this.servletCode = getSystemPropertyValue(environmentPropertyServletCode);
             }

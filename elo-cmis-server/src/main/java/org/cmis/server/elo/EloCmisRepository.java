@@ -227,11 +227,12 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         }
         return serverName + "_" + indexServerForArchive.getArcName();
     }
+
     private static String calcRepositoryName(ServerInfo serverInfo, IndexServerForArchive indexServerForArchive) {
         return calcRepositoryId(serverInfo, indexServerForArchive);
     }
 
-        //DONE
+    //DONE
     private static List<RepositoryInfo> getRepositoryInfos(EloCmisService cmisService, ExtensionsData extensionsData, String repositoryId) {
         // repository info set up
         List<RepositoryInfo> repositoryInfoList = new ArrayList<>();
@@ -1176,15 +1177,20 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         String documentId = EloCmisUtils.getDocumentId(objectId);
         String sordId = EloCmisUtils.getSordId(objectId);
 
+
         if (sordId == null || sordId.isEmpty()) {
             throw new CmisRuntimeException("ObjectId cannot be undefined or it couldn't be retrieved properly.");
         }
 
         IXConnection ixConnection = this.getCmisService().getConnection();
         try {
+            //checkoutSord(ckeckPath, SordC.mbAll, LockC.NO);
+
             if (documentId.equals(EloCmisUtils.DOCUMENT_ID_MISSING)) {
                 //delete folder or delete all versions of a document
-                deleteSord(ixConnection, sordId);
+                Sord sord = ixConnection.ix().checkoutSord(sordId, SordC.mbAll, LockC.NO);
+                String parentSordId = String.valueOf(sord.getParentId());
+                deleteSord(ixConnection, sordId, parentSordId);
             } else if (!documentId.equals(EloCmisUtils.DOCUMENT_ID_MISSING) && allVersions) {
                 deleteDocument(ixConnection, sordId);
             } else {
@@ -1196,9 +1202,13 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         }
     }
 
-    public void deleteSord(IXConnection ixConnection, String sordId) throws RemoteException {
+    public void deleteSord(IXConnection ixConnection, String sordId, String parentSordId) throws RemoteException {
         // Delete folder containing sub-folder
-        String parentId = String.valueOf(EloCmisUtils.FOLDER_ROOT_ID_ELO); //toplevel folder(archive)
+        String parentId = null;
+        //String parentId = String.valueOf(EloCmisUtils.FOLDER_ROOT_ID_ELO); //toplevel folder(archive)
+        parentId = parentSordId;
+
+
         DeleteOptions delOpts = new DeleteOptions();
         delOpts.setDeleteFinally(true);
         //Delete logically
