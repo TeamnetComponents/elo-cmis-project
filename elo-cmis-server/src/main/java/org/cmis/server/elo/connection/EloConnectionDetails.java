@@ -184,7 +184,7 @@ public class EloConnectionDetails {
                         (String) this.detailMap.get(PASSWORD),
                         computerName,
                         "");
-            } else if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.AS.name()) ||
+            } else if (/*((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.AS.name()) ||*/
                     ((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.BASIC_AS.name())) {
                 getLogger().debug("User: " + (String) this.detailMap.get(USER));
                 getLogger().debug("Password: " + (String) this.detailMap.get(PASSWORD));
@@ -245,7 +245,7 @@ public class EloConnectionDetails {
             identity = (String) this.detailMap.get(ELO_CONNECTION_FACTORY_CONNECTION_APP_USER);
         } else if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.BASIC.name())) {
             identity = (String) this.detailMap.get(USER);
-        } else if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.AS.name()) ||
+        } else if (/*((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.AS.name()) ||*/
                 ((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.BASIC_AS.name())) {
             identity = (String) this.detailMap.get(USER_AS);
         } else if (((String) detailMap.get(AUTHENTICATION_TYPE)).equals(EloCmisAuthenticationType.TICKET.name())) {

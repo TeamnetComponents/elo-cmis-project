@@ -7,7 +7,7 @@ package org.cmis.server.elo.commons;
 public enum EloCmisAuthenticationType {
     BASIC,
     BASIC_AS,
-    AS,
+    //AS,
     KERBEROS,
     TICKET;
 
