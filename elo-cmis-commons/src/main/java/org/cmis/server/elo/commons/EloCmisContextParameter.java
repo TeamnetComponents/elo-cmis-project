@@ -11,6 +11,7 @@ import java.util.List;
  * Created by Lucian.Dragomir on 12/27/2014.
  */
 public class EloCmisContextParameter {
+    //NOTE !!!! ALL CONTEXT PARAMETERS USER AS HEADERS MUST BE LOWERCASE
 
     // ---- general parameter ----
     public static final String ELO_CMIS_CONTEXT_PARAMETER_PREFIX = "elo.cmis.server.";
@@ -24,7 +25,7 @@ public class EloCmisContextParameter {
     //AUTHENTICATION TYPE
     public static final String AUTHENTICATION_TYPE = ELO_CMIS_CONTEXT_PARAMETER_PREFIX + "authentication.type";
     //AS
-    public static final String USER_AS = ELO_CMIS_CONTEXT_PARAMETER_PREFIX + "authentication.userAs";
+    public static final String USER_AS = ELO_CMIS_CONTEXT_PARAMETER_PREFIX + "authentication.userAs".toLowerCase(); //fixed for tomcat that has the headers converted to lowercase
     //KERBEROS
     public static final String KERBEROS_REALM = ELO_CMIS_CONTEXT_PARAMETER_PREFIX + "authentication.kerberos.realm";
     public static final String KERBEROS_KDC = ELO_CMIS_CONTEXT_PARAMETER_PREFIX + "authentication.kerberos.kdc";
