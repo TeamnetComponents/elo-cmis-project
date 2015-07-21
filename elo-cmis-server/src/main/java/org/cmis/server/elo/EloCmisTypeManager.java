@@ -1,27 +1,6 @@
-/*
- * Copyright 2013 Florian Müller & Jay Brown
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
-
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- *
- * This code is based on the Apache Chemistry OpenCMIS FileShare project
- * <http://chemistry.apache.org/java/developing/repositories/dev-repositories-fileshare.html>.
- *
- * It is part of a training exercise and not intended for production use!
- *
- */
 package org.cmis.server.elo;
 
+import de.elo.extension.service.EloUtilsService;
 import de.elo.ix.client.*;
 import de.elo.utils.net.RemoteException;
 import org.apache.chemistry.opencmis.commons.definitions.*;
@@ -33,7 +12,7 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyDateTimeDe
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyDecimalDefinitionImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerDefinitionImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyStringDefinitionImpl;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cmis.base.BaseTypeManager;
 
 import java.math.BigInteger;
@@ -44,9 +23,13 @@ import java.util.*;
  */
 public class EloCmisTypeManager extends BaseTypeManager<EloCmisService> {
 
-    //private final static Map<String, Map<Integer, MaskName>> typeEloMaskNamesMap = new ConcurrentHashMap<>();
     private final static Map<String, Map<String, TypeDefinition>> typeDefinitionsMap = new HashMap<>();
     private final static Map<String, Date> typeDateMap = new HashMap<>();
+
+    private static final int BASE_DOCUMENT_MASK_ID = 0;
+    private static final int BASE_FOLDER_MASK_ID = 0;
+    public static final int NOT_FOUND_MASK_ID = -1;
+
 
     private static final String NAMESPACE = "elo";
     private static final String PROPERTY_ID_PREFIX_ELO = NAMESPACE + ":" + "property-";
@@ -103,47 +86,135 @@ public class EloCmisTypeManager extends BaseTypeManager<EloCmisService> {
         return null;
     }
 
-    private static int getRootBaseTypeIdElo(BaseTypeId cmisBaseTypeId, IXConnection ixConnection) {
-        if (BaseTypeId.CMIS_FOLDER.equals(cmisBaseTypeId)) {
-            return 0;
+
+    //------------------------------------------------------------------------------------------------------------------
+    public List<Sord> filterCmisSords(List<Sord> sordList) {
+        List<Sord> sordFilterList = new ArrayList<Sord>();
+        for (Sord sord : sordList) {
+            if (isCmisSord(sord)) {
+                sordFilterList.add(sord);
+            }
         }
-        if (BaseTypeId.CMIS_DOCUMENT.equals(cmisBaseTypeId)) {
-            return 0;
-        }
-        throw new CmisNotSupportedException("The type " + cmisBaseTypeId + " is not supported in ELO");
+        return sordFilterList;
     }
 
-    public static int convertCmisType2EloMaskId(String repositoryId, String cmisTypeIdOrName) {
+    public boolean isCmisSord(Sord sord) {
+        boolean isCmisSord;
+        BaseTypeId baseTypeId = getBaseTypeId(sord);
+        String typeId = getTypeId(sord);
+        isCmisSord = (baseTypeId != null && (getTypeDefinition(typeId) != null));
+        return isCmisSord;
+    }
+
+
+    //------------------------------------------------------------------------------------------------------------------
+    private static BaseTypeId getBaseTypeId(String typeIdOrName) {
+        if (typeIdOrName == null) {
+            throw new CmisNotSupportedException("The type identifier can not be null.");
+        }
+        for (BaseTypeId baseTypeId : BaseTypeId.values()) {
+            if (typeIdOrName.startsWith(baseTypeId.value())) {
+                return baseTypeId;
+            }
+        }
+        throw new CmisNotSupportedException("The provided type identifier [" + typeIdOrName + "] is not supported. Accepted format is {baseType}[-mask-{maskId}] or {baseType}[~mask~{maskName}].");
+    }
+
+    public static BaseTypeId getBaseTypeId(Sord sord) {
+        //sord is root folder
+        if (EloUtilsService.isRootFolder(sord)) {
+            return BaseTypeId.CMIS_FOLDER;
+        }
+        //sord is folder
+        if (EloUtilsService.isFolder(sord)) {
+            return BaseTypeId.CMIS_FOLDER;
+        }
+        //sord is document
+        if (EloUtilsService.isDocument(sord)) {
+            return BaseTypeId.CMIS_DOCUMENT;
+        }
+        return null;
+    }
+
+    public static String getTypeName(BaseTypeId baseTypeId, int maskId, String maskName) {
+        return baseTypeId.value() + (maskId == getBaseMaskId(baseTypeId) ? "" : MASK_NAME_PREFIX_ELO + maskName);
+    }
+
+    public static String getTypeId(BaseTypeId baseTypeId, int maskId) {
+        return baseTypeId.value() + (maskId == getBaseMaskId(baseTypeId) ? "" : MASK_ID_PREFIX_ELO + maskId);
+    }
+
+    public static String getTypeId(Sord sord) {
+        return getTypeId(getBaseTypeId(sord), sord.getMask());
+    }
+
+    public static String getTypeId(String repositoryId, String typeIdOrName) {
+        if (StringUtils.isEmpty(typeIdOrName)) {
+            return typeIdOrName;
+        }
+        Map<String, TypeDefinition> typeDefinitionsMapCache = getTypeDefinitionsMapCache(repositoryId);
+        if (typeDefinitionsMapCache != null) {
+            BaseTypeId baseTypeId = getBaseTypeId(typeIdOrName);
+            if (baseTypeId != null) {
+                for (TypeDefinition typeDefinition : typeDefinitionsMapCache.values()) {
+                    if (typeIdOrName.equals(baseTypeId.value() + MASK_NAME_PREFIX_ELO + typeDefinition.getLocalName())) {
+                        return typeDefinition.getId();
+                    }
+                }
+            }
+        }
+        return typeIdOrName;
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    private static int getBaseMaskId(BaseTypeId baseTypeId) {
+        if (BaseTypeId.CMIS_FOLDER.equals(baseTypeId)) {
+            return BASE_FOLDER_MASK_ID;
+        }
+        if (BaseTypeId.CMIS_DOCUMENT.equals(baseTypeId)) {
+            return BASE_DOCUMENT_MASK_ID;
+        }
+        throw new CmisNotSupportedException("The type " + baseTypeId + " is not supported in ELO");
+    }
+
+    private static int getMaskId(String typeId) {
+        //TypeId format must be {baseType}[-mask-{maskId}]
+        int maskId = NOT_FOUND_MASK_ID;
+        BaseTypeId baseTypeId;
+        if (typeId != null) {
+            baseTypeId = getBaseTypeId(typeId);
+            if (baseTypeId != null) {
+                if (typeId.equals(baseTypeId.value())) {
+                    maskId = getBaseMaskId(baseTypeId);
+                } else {
+                    if (typeId.contains(MASK_ID_PREFIX_ELO)) {
+                        maskId = Integer.parseInt(typeId.substring(typeId.indexOf(MASK_ID_PREFIX_ELO) + MASK_ID_PREFIX_ELO.length()));
+                    }
+                }
+            }
+        }
+        if (maskId == NOT_FOUND_MASK_ID) {
+            throw new CmisNotSupportedException("Unable to find corespondent maskId for the [" + typeId + "] cmis type. Accepted format is {baseType}[-mask-{maskId}].");
+        }
+        return maskId;
+    }
+
+    public static int getMaskId(String repositoryId, String typeIdOrName) {
         //fix to accept as types cmisTypeId and cmisTypeName
-        String cmisTypeId = calculateCmisTypeId(repositoryId, cmisTypeIdOrName);
-        return convertCmisTypeId2EloMaskId(cmisTypeId);
+        String typeId = getTypeId(repositoryId, typeIdOrName);
+        return getMaskId(typeId);
     }
 
-    private static int convertCmisTypeId2EloMaskId(String cmisTypeId) {
-        if (cmisTypeId.contains(MASK_ID_PREFIX_ELO)) {
-            return Integer.parseInt(cmisTypeId.substring(cmisTypeId.indexOf(MASK_ID_PREFIX_ELO) + MASK_ID_PREFIX_ELO.length()));
-        }
-        return 0;
-    }
+    //------------------------------------------------------------------------------------------------------------------
 
-    //eloMask to cmisTypeId
-    public static String convertEloMask2CmisTypeId(MaskName maskName, BaseTypeId baseTypeId, IXConnection ixConnection) {
-        return baseTypeId.value() + (maskName.getId() == getRootBaseTypeIdElo(baseTypeId, ixConnection) ? "" : MASK_ID_PREFIX_ELO + maskName.getId());
-    }
-
-    //eloMask to cmisTypeName
-    public static String convertEloMask2CmisTypeName(MaskName maskName, BaseTypeId baseTypeId, IXConnection ixConnection) {
-        return baseTypeId.value() + (maskName.getId() == getRootBaseTypeIdElo(baseTypeId, ixConnection) ? "" : MASK_NAME_PREFIX_ELO + maskName.getName());
-    }
-
-    public static String calculateCmisPropertyId(String repositoryId, String cmisTypeIdOrName, String cmisPropertyIdOrName) {
-        String cmisPropertyId = cmisPropertyIdOrName;
-        String cmisTypeId = calculateCmisTypeId(repositoryId, cmisTypeIdOrName);
+    public static String getPropertyId(String repositoryId, String typeIdOrName, String propertyIdOrName) {
+        String cmisPropertyId = propertyIdOrName;
+        String cmisTypeId = getTypeId(repositoryId, typeIdOrName);
         TypeDefinition typeDefinition = getTypeDefinitionCache(repositoryId, cmisTypeId);
         if (typeDefinition != null) {
-            if (!typeDefinition.getPropertyDefinitions().containsKey(cmisPropertyIdOrName)) {
+            if (!typeDefinition.getPropertyDefinitions().containsKey(propertyIdOrName)) {
                 for (PropertyDefinition propertyDefinition : typeDefinition.getPropertyDefinitions().values()) {
-                    if (cmisPropertyIdOrName.equals(PROPERTY_NAME_PREFIX_ELO + typeDefinition.getDisplayName())) {
+                    if (propertyIdOrName.equals(PROPERTY_NAME_PREFIX_ELO + typeDefinition.getDisplayName())) {
                         return propertyDefinition.getId();
                     }
                 }
@@ -152,104 +223,64 @@ public class EloCmisTypeManager extends BaseTypeManager<EloCmisService> {
         return cmisPropertyId;
     }
 
-    public static String calculateCmisTypeId(String repositoryId, String cmisTypeIdOrName) {
-        if (StringUtils.isEmpty(cmisTypeIdOrName)) {
-            return cmisTypeIdOrName;
-        }
-        Map<String, TypeDefinition> typeDefinitionsMapCache = getTypeDefinitionsMapCache(repositoryId);
-        if (typeDefinitionsMapCache != null) {
-            BaseTypeId baseTypeId = null;
-            if (cmisTypeIdOrName.startsWith(BaseTypeId.CMIS_FOLDER.value())) {
-                baseTypeId = BaseTypeId.CMIS_FOLDER;
-            }
-            if (cmisTypeIdOrName.startsWith(BaseTypeId.CMIS_DOCUMENT.value())) {
-                baseTypeId = BaseTypeId.CMIS_DOCUMENT;
-            }
-            if (baseTypeId != null) {
-                for (TypeDefinition typeDefinition : typeDefinitionsMapCache.values()) {
-                    if (cmisTypeIdOrName.equals(baseTypeId.value() + MASK_NAME_PREFIX_ELO + typeDefinition.getLocalName())) {
-                        return typeDefinition.getId();
-                    }
-                }
-            }
-        }
-        return cmisTypeIdOrName;
+    public static String getPropertyId(int objKeyId) {
+        return PROPERTY_ID_PREFIX_ELO + objKeyId;
     }
 
-    public static String convertSord2CmisTypeId(Sord sord) {
-        return EloCmisUtils.getBaseTypeId(sord).value() + (sord.getMask() == getRootBaseTypeIdElo(EloCmisUtils.getBaseTypeId(sord), null) ? "" : MASK_ID_PREFIX_ELO + sord.getMask());
+    public static boolean isCustomProperty(String propertyId) {
+        return propertyId.startsWith(PROPERTY_ID_PREFIX_ELO);
     }
 
-    public static String convertObjKeyIdElo2CmisPropertyId(int id) {
-        return PROPERTY_ID_PREFIX_ELO + id;
+    public static int getObjKeyId(String propertyId) {
+        return Integer.parseInt(propertyId.substring(PROPERTY_ID_PREFIX_ELO.length()));
     }
 
-    public static boolean isCustomCmisProperty(String cmisProperyId) {
-        return cmisProperyId.startsWith(PROPERTY_ID_PREFIX_ELO);
-    }
+    private static Map<String, TypeDefinition> retrieveTypeDefinitionMapElo(IXConnection ixConnection) {
+        Map<String, TypeDefinition> typeDefinitionMap = new HashMap<String, TypeDefinition>();
+        MaskName[] maskNames;
+        boolean hasBaseFolderMaskId = false;
+        boolean hasBaseDocumentMaskId = false;
+        String typeId;
 
-    public static int convertCmisPropertyId2ObjKeyIdElo(String cmisPropertyId) {
-        return Integer.parseInt(cmisPropertyId.substring(PROPERTY_ID_PREFIX_ELO.length()));
-    }
-
-
-//    private static String getRootBaseTypeGuidElo(BaseTypeId cmisBaseTypeId, IXConnection ixConnection) {
-//        try {
-//            if (BaseTypeId.CMIS_FOLDER.equals(cmisBaseTypeId)) {
-//                return ixConnection.getCONST().getDOC_MASK().getGUID_BASIC();
-//            }
-//            if (BaseTypeId.CMIS_DOCUMENT.equals(cmisBaseTypeId)) {
-//                return ixConnection.getCONST().getDOC_MASK().getGUID_BASIC();
-//            }
-//
-//        } catch (RemoteException e) {
-//            throw new CmisRuntimeException(e.getMessage(), e);
-//        }
-//        return null;
-//    }
-
-    private static MaskName[] retrieveMaskNameArrayElo(IXConnection ixConnection) {
-        MaskName[] maskNames = null;
         try {
-            EditInfo editInfo = ixConnection.ix().createSord(null, null, EditInfoC.mbBasicData);
-            maskNames = editInfo.getMaskNames();
-            Arrays.sort(editInfo.getMaskNames(), new Comparator<MaskName>() {
-                @Override
-                public int compare(MaskName m1, MaskName m2) {
-                    return m1.getId() > m2.getId() ? +1 : m1.getId() < m2.getId() ? -1 : 0;
-                }
-            });
+            maskNames = EloUtilsService.getMasks(ixConnection);
         } catch (RemoteException e) {
             throw new CmisRuntimeException(e.getMessage(), e);
         }
-        return maskNames;
-    }
 
-//    private static Map<Integer, MaskName> retrieveTypeEloMaskNamesMap(IXConnection ixConnection) {
-//        MaskName[] maskNames = retrieveMaskNameArrayElo(ixConnection);
-//        Map<Integer, MaskName> repositoryMaskMap = new ConcurrentHashMap<>();
-//        for (MaskName maskName : maskNames) {
-//            repositoryMaskMap.put(maskName.getId(), maskName);
-//        }
-//        return repositoryMaskMap;
-//    }
-
-    private static Map<String, TypeDefinition> retrieveTypeDefinitionMapElo(IXConnection ixConnection) {
-        Map<String, TypeDefinition> typeDefinitionMap = new HashMap<>();
-        MaskName[] maskNames = retrieveMaskNameArrayElo(ixConnection);
+        //validate existence of the base mask folder and base mask document
         for (MaskName maskName : maskNames) {
-            String cmisTypeId = null;
+            if ((maskName.getId() == BASE_FOLDER_MASK_ID) && maskName.isFolderMask()) {
+                hasBaseFolderMaskId = true;
+            }
+            if ((maskName.getId() == BASE_DOCUMENT_MASK_ID) && maskName.isDocumentMask()) {
+                hasBaseDocumentMaskId = true;
+            }
+        }
+        if (!hasBaseDocumentMaskId) {
+            typeId = getTypeId(BaseTypeId.CMIS_DOCUMENT, BASE_DOCUMENT_MASK_ID);
+            if (!(typeDefinitionMap.containsKey(typeId))) {
+                throw new CmisRuntimeException("The default document type [" + BaseTypeId.CMIS_DOCUMENT.value() + "] can not be mapped on maskId=" + BASE_DOCUMENT_MASK_ID + ". Please check that the maskId exists and is configured as document mask.");
+            }
+        }
+        if (!hasBaseFolderMaskId) {
+            typeId = getTypeId(BaseTypeId.CMIS_FOLDER, BASE_FOLDER_MASK_ID);
+            if (!(typeDefinitionMap.containsKey(typeId))) {
+                throw new CmisRuntimeException("The default folder type [" + BaseTypeId.CMIS_FOLDER.value() + "] can not be mapped on maskId=" + BASE_FOLDER_MASK_ID + ". Please check that the maskId exists and is configured as folder mask.");
+            }
+        }
+
+        //add to CMISTypes only masks that are relevant for DMS functionality (FOLDER and DOCUMENT) (for example SEARCH masks are ignored for DMS)
+        for (MaskName maskName : maskNames) {
             if (maskName.isFolderMask()) {
-                cmisTypeId = convertEloMask2CmisTypeId(maskName, BaseTypeId.CMIS_FOLDER, ixConnection);
-                //cmisTypeId = BaseTypeId.CMIS_FOLDER.value() + (maskName.getGuid().equals(getRootFolderElo(ixConnection)) ? "" : MASK_ID_PREFIX_ELO + maskName.getName());
-                TypeDefinition typeDefinition = retrieveTypeDefinitionElo(typeDefinitionMap, ixConnection, cmisTypeId);
-                typeDefinitionMap.put(cmisTypeId, typeDefinition);
+                typeId = getTypeId(BaseTypeId.CMIS_FOLDER, maskName.getId());
+                TypeDefinition typeDefinition = retrieveTypeDefinitionElo(typeDefinitionMap, ixConnection, typeId);
+                typeDefinitionMap.put(typeId, typeDefinition);
             }
             if (maskName.isDocumentMask()) {
-                cmisTypeId = convertEloMask2CmisTypeId(maskName, BaseTypeId.CMIS_DOCUMENT, ixConnection);
-                //cmisTypeId = BaseTypeId.CMIS_DOCUMENT.value() + (maskName.getGuid().equals(getRootDocumentElo(ixConnection)) ? "" : MASK_ID_PREFIX_ELO + maskName.getName());
-                TypeDefinition typeDefinition = retrieveTypeDefinitionElo(typeDefinitionMap, ixConnection, cmisTypeId);
-                typeDefinitionMap.put(cmisTypeId, typeDefinition);
+                typeId = getTypeId(BaseTypeId.CMIS_DOCUMENT, maskName.getId());
+                TypeDefinition typeDefinition = retrieveTypeDefinitionElo(typeDefinitionMap, ixConnection, typeId);
+                typeDefinitionMap.put(typeId, typeDefinition);
             }
         }
         return typeDefinitionMap;
@@ -258,69 +289,51 @@ public class EloCmisTypeManager extends BaseTypeManager<EloCmisService> {
     private static TypeDefinition retrieveTypeDefinitionElo(Map<String, TypeDefinition> typeDefinitionMap, IXConnection ixConnection, String typeId) {
         TypeDefinition typeDefinition = null;
         String parentTypeId = null;
-        String eloTypeId = null;
-        BaseTypeId cmisBaseTypeId = null;
+        int maskId = NOT_FOUND_MASK_ID;
+        BaseTypeId baseTypeId = null;
 
         //try get it from imput variable (cached)
+        baseTypeId = getBaseTypeId(typeId);
+        maskId = getMaskId(typeId);
         typeDefinition = typeDefinitionMap.get(typeId);
         if (typeDefinition != null) {
             return typeDefinition;
         }
 
-        if (eloTypeId == null && typeId.startsWith(BaseTypeId.CMIS_FOLDER.value())) {
-            cmisBaseTypeId = BaseTypeId.CMIS_FOLDER;
-            if (typeId.equals(cmisBaseTypeId.value())) {
-                eloTypeId = String.valueOf(getRootBaseTypeIdElo(cmisBaseTypeId, ixConnection));
-            } else {
-                eloTypeId = typeId.substring((cmisBaseTypeId.value() + MASK_ID_PREFIX_ELO).length());
-            }
-        }
-        if (eloTypeId == null && typeId.startsWith(BaseTypeId.CMIS_DOCUMENT.value())) {
-            cmisBaseTypeId = BaseTypeId.CMIS_DOCUMENT;
-            if (typeId.equals(cmisBaseTypeId.value())) {
-                eloTypeId = String.valueOf(getRootBaseTypeIdElo(cmisBaseTypeId, ixConnection));
-            } else {
-                eloTypeId = typeId.substring((cmisBaseTypeId.value() + MASK_ID_PREFIX_ELO).length());
-            }
-        }
-        if (eloTypeId == null) {
-            throw new CmisRuntimeException("Unable to find type '" + typeId + "'.");
-        }
-
         try {
-            DocMask docMask = ixConnection.ix().checkoutDocMask(eloTypeId, DocMaskC.mbAll, LockC.NO);
-            if (typeDefinition == null && cmisBaseTypeId.equals(BaseTypeId.CMIS_FOLDER) && docMask.getDetails().isFolderMask()) {
-                MutableFolderTypeDefinition folderType = null;
-                parentTypeId = BaseTypeId.CMIS_FOLDER.value();
-                if (typeId.equals(parentTypeId)) {
-                    folderType = getDefaultTypeDefinitionFactory().createBaseFolderTypeDefinition(CmisVersion.CMIS_1_1);
-                } else {
-                    folderType = getDefaultTypeDefinitionFactory().createFolderTypeDefinition(CmisVersion.CMIS_1_1, parentTypeId);
-                    folderType.setId(typeId); //parentTypeId + MASK_ID_PREFIX_ELO + docMask.getName()
-                    folderType.setBaseTypeId(BaseTypeId.CMIS_FOLDER);
-                    folderType.setLocalName(docMask.getName());
-                    folderType.setDisplayName(docMask.getName());
-                    folderType.setDescription(docMask.getText());
-                }
-                removeQueryableAndOrderableFlags(folderType);
-                typeDefinition = folderType;
-            }
+            DocMask docMask = ixConnection.ix().checkoutDocMask(String.valueOf(maskId), DocMaskC.mbAll, LockC.NO);
+            parentTypeId = baseTypeId.value();
 
-            if (typeDefinition == null && cmisBaseTypeId.equals(BaseTypeId.CMIS_DOCUMENT) && docMask.getDetails().isDocumentMask()) {
+            if (typeDefinition == null && baseTypeId.equals(BaseTypeId.CMIS_DOCUMENT) && docMask.getDetails().isDocumentMask()) {
                 MutableDocumentTypeDefinition documentType = null;
-                parentTypeId = BaseTypeId.CMIS_DOCUMENT.value();
                 if (typeId.equals(parentTypeId)) {
                     documentType = getDefaultTypeDefinitionFactory().createBaseDocumentTypeDefinition(CmisVersion.CMIS_1_1);
                 } else {
                     documentType = getDefaultTypeDefinitionFactory().createDocumentTypeDefinition(CmisVersion.CMIS_1_1, parentTypeId);
                     documentType.setId(typeId); //parentTypeId + MASK_ID_PREFIX_ELO + docMask.getName()
-                    documentType.setBaseTypeId(BaseTypeId.CMIS_DOCUMENT);
+                    documentType.setBaseTypeId(baseTypeId);
                     documentType.setLocalName(docMask.getName());
                     documentType.setDisplayName(docMask.getName());
                     documentType.setDescription(docMask.getText());
                 }
                 removeQueryableAndOrderableFlags(documentType);
                 typeDefinition = documentType;
+            }
+
+            if (typeDefinition == null && baseTypeId.equals(BaseTypeId.CMIS_FOLDER) && docMask.getDetails().isFolderMask()) {
+                MutableFolderTypeDefinition folderType = null;
+                if (typeId.equals(parentTypeId)) {
+                    folderType = getDefaultTypeDefinitionFactory().createBaseFolderTypeDefinition(CmisVersion.CMIS_1_1);
+                } else {
+                    folderType = getDefaultTypeDefinitionFactory().createFolderTypeDefinition(CmisVersion.CMIS_1_1, parentTypeId);
+                    folderType.setId(typeId); //parentTypeId + MASK_ID_PREFIX_ELO + docMask.getName()
+                    folderType.setBaseTypeId(baseTypeId);
+                    folderType.setLocalName(docMask.getName());
+                    folderType.setDisplayName(docMask.getName());
+                    folderType.setDescription(docMask.getText());
+                }
+                removeQueryableAndOrderableFlags(folderType);
+                typeDefinition = folderType;
             }
 
             //add property definitions
@@ -392,7 +405,7 @@ public class EloCmisTypeManager extends BaseTypeManager<EloCmisService> {
                 if (mutablePropertyDefinition != null) {
                     //String propertyId = StringUtils.uncapitalize(WordUtils.capitalizeFully(StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(docMaskLine.getName()), " "), " ".toCharArray())).replaceAll("[^A-Za-z0-9]", "");
                     //String propertyId = String.valueOf(docMaskLine.getId());
-                    mutablePropertyDefinition.setId(convertObjKeyIdElo2CmisPropertyId(docMaskLine.getId()));
+                    mutablePropertyDefinition.setId(getPropertyId(docMaskLine.getId()));
                     mutablePropertyDefinition.setLocalNamespace(NAMESPACE);
                     mutablePropertyDefinition.setLocalName(docMaskLine.getKey());
                     mutablePropertyDefinition.setDisplayName(docMaskLine.getName());
@@ -408,11 +421,7 @@ public class EloCmisTypeManager extends BaseTypeManager<EloCmisService> {
                 }
             }
 
-        } catch (
-                RemoteException e
-                )
-
-        {
+        } catch (RemoteException e) {
             throw new CmisRuntimeException(e.getMessage(), e);
         }
 
@@ -430,60 +439,6 @@ public class EloCmisTypeManager extends BaseTypeManager<EloCmisService> {
 
     private IXConnection getIXConnection() {
         return this.getCmisService().getConnection();
-    }
-
-//    private void refreshEloMaskNameCache() {
-//        String repositoryId = getRepositoryId();
-//        if (repositoryId == null) {
-//            return;
-//        }
-//        IXConnection ixConnection = getIXConnection();
-//        MaskName[] maskNames = null;
-//        Map<Integer, MaskName> repositoryMaskMap = new ConcurrentHashMap<>();
-//        try {
-//            EditInfo editInfo = ixConnection.ix().createSord(null, null, EditInfoC.mbBasicData);
-//            maskNames = editInfo.getMaskNames();
-//            for (MaskName maskName : maskNames) {
-//                repositoryMaskMap.put(maskName.getId(), maskName);
-//            }
-//            Map<Integer, MaskName> repositoryMaskMapOld = typeEloMaskNamesMap.get(repositoryId);
-//            typeEloMaskNamesMap.put(repositoryId, repositoryMaskMap);
-//            if (repositoryMaskMapOld != null) {
-//                repositoryMaskMapOld.clear();
-//            }
-//        } catch (RemoteException e) {
-//            throw new CmisRuntimeException(e.getMessage(), e);
-//        }
-//    }
-//
-//    private MaskName getEloMaskNameCache(EloMaskIdentifier maskIdentifier) {
-//        String repositoryId = getRepositoryId();
-//        if (repositoryId == null) {
-//            return null;
-//        }
-//        if (typeEloMaskNamesMap.get(repositoryId) == null) {
-//            return null;
-//        }
-//        if (maskIdentifier.getId() != null) {
-//            return typeEloMaskNamesMap.get(repositoryId).get(maskIdentifier.getId());
-//        }
-//        if (maskIdentifier.getName() != null) {
-//            for (int maskId : typeEloMaskNamesMap.get(repositoryId).keySet()) {
-//                MaskName mask = typeEloMaskNamesMap.get(repositoryId).get(maskId);
-//                if (mask.getName().equals(maskIdentifier.getName())) {
-//                    return mask;
-//                }
-//            }
-//        }
-//        return null;
-//    }
-
-
-    //constructor and service methods
-
-    public String getCmisTypeName(Sord sord) {
-        String cmisTypeId = convertSord2CmisTypeId(sord);
-        return getTypeDefinition(cmisTypeId).getDisplayName();
     }
 
     private Map<String, TypeDefinition> getTypeDefinitions(boolean forceRefresh) {
@@ -518,14 +473,14 @@ public class EloCmisTypeManager extends BaseTypeManager<EloCmisService> {
     @Override
     public void deleteType(String typeId) {
         //fix to accept as types cmisTypeId and cmisTypeName
-        typeId = calculateCmisTypeId(getRepositoryId(), typeId);
+        typeId = getTypeId(getRepositoryId(), typeId);
         deleteEloStorageMask(typeId);
     }
 
     @Override
     public TypeDefinitionList getTypeChildren(String typeId, Boolean includePropertyDefinitions, BigInteger maxItems, BigInteger skipCount) {
         //fix to accept as types cmisTypeId and cmisTypeName
-        typeId = calculateCmisTypeId(getRepositoryId(), typeId);
+        typeId = getTypeId(getRepositoryId(), typeId);
         return getDefaultTypeDefinitionFactory().createTypeDefinitionList(getTypeDefinitions(), typeId, includePropertyDefinitions, maxItems, skipCount, this.getCmisService().getCallContext().getCmisVersion());
     }
 
@@ -534,7 +489,7 @@ public class EloCmisTypeManager extends BaseTypeManager<EloCmisService> {
         Map<String, TypeDefinition> typeDefinitionMap = getTypeDefinitions();
 
         //fix to accept as types cmisTypeId and cmisTypeName
-        typeId = calculateCmisTypeId(getRepositoryId(), typeId);
+        typeId = getTypeId(getRepositoryId(), typeId);
 
         TypeDefinition typeDefinition = typeDefinitionMap.get(typeId);
         if (typeDefinition == null) {
@@ -555,7 +510,7 @@ public class EloCmisTypeManager extends BaseTypeManager<EloCmisService> {
         Map<String, TypeDefinition> typeDefinitionMap = getTypeDefinitions();
 
         //fix to accept as types cmisTypeId and cmisTypeName
-        typeId = calculateCmisTypeId(getRepositoryId(), typeId);
+        typeId = getTypeId(getRepositoryId(), typeId);
 
         return getDefaultTypeDefinitionFactory().createTypeDescendants(typeDefinitionMap, typeId, depth, includePropertyDefinitions, this.getCmisService().getCallContext().getCmisVersion());
     }

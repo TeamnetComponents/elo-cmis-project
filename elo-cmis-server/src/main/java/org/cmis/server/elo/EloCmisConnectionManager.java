@@ -1,164 +1,169 @@
 package org.cmis.server.elo;
 
-import de.elo.ix.client.IXConnFactory;
-import de.elo.ix.client.IXConnection;
-import de.elo.utils.net.RemoteException;
+import de.elo.extension.connection.IXConnectionKey;
+import de.elo.extension.connection.IXConnectionKeyBuilder;
+import de.elo.extension.connection.IXPoolableConnection;
+import de.elo.extension.connection.IXPoolableConnectionManager;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.MutableCallContext;
-import org.cmis.server.elo.connection.EloConnectionDetails;
-import org.cmis.server.elo.connection.EloConnectionPools;
+import org.cmis.server.elo.commons.EloCmisAuthenticationType;
+import org.cmis.server.elo.commons.EloCmisContextParameter;
 import org.cmis.util.CmisServiceParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 /**
  * Created by Lucian.Dragomir on 6/5/2014.
  */
-public class EloCmisConnectionManager {
-
-    //ELO CONNECTION CONTEXT
-    public static final String ELO_CONNECTION_CONTEXT = "elo.connection";
+public class EloCmisConnectionManager implements AutoCloseable {
 
     private static final Logger LOG = LoggerFactory.getLogger(EloCmisConnectionManager.class);
+    private static final String ELO_CONNECTION_CONTEXT = "elo.connection";
 
     private CmisServiceParameters cmisServiceParameters;
-    //private IXConnFactory ixConnFactory;
-    private Properties applicationInfo;
-    private EloConnectionPools eloConnectionPools;
-    private EloConnectionDetails defaultEloConnectionDetails;
+    private IXPoolableConnectionManager ixPoolableConnectionManager;
 
     public EloCmisConnectionManager(CmisServiceParameters cmisServiceParameters) {
         this.cmisServiceParameters = cmisServiceParameters;
-        this.applicationInfo = getApplicationInfo();
-        this.eloConnectionPools = new EloConnectionPools(this);
-        //this.ixConnFactory = null;
-        this.defaultEloConnectionDetails = new EloConnectionDetails(this);
+        this.ixPoolableConnectionManager = new IXPoolableConnectionManager(cmisServiceParameters.getParameters());
     }
 
-    public String getDefaultApplicationName() {
-        return applicationInfo.getProperty("finalName", "");
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            close();
+        } catch (Throwable t) {
+            throw t;
+        } finally {
+            super.finalize();
+        }
     }
 
-    public String getDefaultApplicationVersion() {
-        return applicationInfo.getProperty("version", "");
+    @Override
+    public void close() throws Exception {
+        if (this.ixPoolableConnectionManager != null) {
+            this.ixPoolableConnectionManager.close();
+            this.ixPoolableConnectionManager = null;
+            ;
+        }
     }
-
-    public IXConnFactory getIxConnFactory() throws RemoteException {
-//        if (this.ixConnFactory == null) {
-//            this.ixConnFactory.
-//            try {
-//                this.ixConnFactory = (new EloConnectionDetails(this)).createIXConnFactory();
-//            } catch (IOException e) {
-//                throw new IllegalStateException(e);
-//            }
-//        }
-        return defaultEloConnectionDetails.createIXConnFactory();
-    }
-
-
-//    private void setIxConnFactory(IXConnFactory ixConnFactory) {
-//        this.ixConnFactory = ixConnFactory;
-//    }
 
     public CmisServiceParameters getCmisServiceParameters() {
         return this.cmisServiceParameters;
     }
 
-    public void destroy() {
-        //TO BE implement cleanup of ELO Connections
-    }
 
-    private Properties getApplicationInfo() {
-        Properties properties = new Properties();
-
-        String path = "/application.info";
-        InputStream stream = getClass().getResourceAsStream(path);
-        if (stream != null) {
-            try {
-                properties.load(stream);
-                stream.close();
-            } catch (IOException e) {
+    public IXConnectionKey createIXConnectionKey(CallContext callContext) {
+        IXConnectionKey ixConnectionKey;
+        if (callContext == null) {
+            ixConnectionKey = new IXConnectionKeyBuilder().setDefaultCredentials().build();
+        } else {
+            String authenticationType = (String) callContext.get(EloCmisContextParameter.AUTHENTICATION_TYPE);
+            if (authenticationType == null) {
+                authenticationType = EloCmisAuthenticationType.BASIC.name();
             }
+            IXConnectionKeyBuilder ixConnectionKeyBuilder = new IXConnectionKeyBuilder();
+
+            if (authenticationType.equals(EloCmisAuthenticationType.BASIC.name())) {
+                ixConnectionKeyBuilder.setBasicCredentials(callContext.getUsername(), callContext.getPassword());
+            } else if (authenticationType.equals(EloCmisAuthenticationType.BASIC_AS.name())) {
+                if (callContext.getUsername() != null && callContext.getUsername().length() > 0) {
+                    ixConnectionKeyBuilder.setBasicAsCredentials(callContext.getUsername(), callContext.getPassword(), (String) callContext.get(EloCmisContextParameter.USER_AS));
+                } else {
+                    ixConnectionKeyBuilder.setBasicAsCredentials((String) callContext.get(EloCmisContextParameter.USER_AS));
+                }
+            } else if (authenticationType.equals(EloCmisAuthenticationType.KERBEROS.name())) {
+                ixConnectionKeyBuilder.setKerberosCredentials((String) callContext.get(EloCmisContextParameter.KERBEROS_REALM), (String) callContext.get(EloCmisContextParameter.KERBEROS_KDC), (String) callContext.get(EloCmisContextParameter.KERBEROS_PRINCIPAL));
+
+            } else if (authenticationType.equals(EloCmisAuthenticationType.KERBEROS.name())) {
+                ixConnectionKeyBuilder.setTicketCredentials((String) callContext.get(EloCmisContextParameter.TICKET));
+            } else {
+                //force authentication error
+                ixConnectionKeyBuilder = null;
+            }
+
+            //de uitat si la client locale
+
+            ixConnectionKey = ixConnectionKeyBuilder.build();
         }
-        return properties;
+
+        return ixConnectionKey;
     }
 
-    //throw new CmisPermissionDeniedException("Unable to create connection to ELO Server.", e);
 
-
-    public IXConnection getConnection(CallContext callContext) {
-        IXConnection ixConnection = null;
-        EloConnectionDetails eloConnectionDetails = new EloConnectionDetails(this, callContext);
+    public IXPoolableConnection getConnection(CallContext callContext) throws CmisConnectionException {
+        IXPoolableConnection ixPoolableConnection = null;
+        IXConnectionKey ixConnectionKey = createIXConnectionKey(callContext);
         if (callContext != null) {
-            ixConnection = (IXConnection) callContext.get(ELO_CONNECTION_CONTEXT);
-            if (ixConnection != null) {
-                if (true || eloConnectionDetails.isValidConnection(ixConnection)) {
-                    return ixConnection;
+            ixPoolableConnection = (IXPoolableConnection) callContext.get(ELO_CONNECTION_CONTEXT);
+            if (ixPoolableConnection != null) {
+                if (ixPoolableConnection.hasIXConnectionKey(ixConnectionKey) && ixPoolableConnection.isValid()) {
+                    return ixPoolableConnection;
                 } else {
                     MutableCallContext mutableCallContext = (MutableCallContext) callContext;
                     mutableCallContext.remove(ELO_CONNECTION_CONTEXT);
                     try {
-                        this.eloConnectionPools.invalidateObject(eloConnectionDetails, ixConnection);
+                        ixPoolableConnection.close(true);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        throw new CmisConnectionException("Unable to get connection to ", e);
                     }
-                    ixConnection = null;
+                    ixPoolableConnection = null;
                 }
             }
         }
-        if (ixConnection == null) {
+        if (ixPoolableConnection == null) {
             try {
-                ixConnection = this.eloConnectionPools.borrowObject(eloConnectionDetails);
+                ixPoolableConnection = this.ixPoolableConnectionManager.retrieveConnection(ixConnectionKey);
                 if (callContext != null) {
                     MutableCallContext mutableCallContext = (MutableCallContext) callContext;
-                    mutableCallContext.put(ELO_CONNECTION_CONTEXT, ixConnection);
+                    mutableCallContext.put(ELO_CONNECTION_CONTEXT, ixPoolableConnection);
                 }
             } catch (Exception e) {
                 throw new CmisPermissionDeniedException("Unable to create connection to ELO Server.", e);
             }
         }
-        return ixConnection;
+        return ixPoolableConnection;
     }
 
-    public boolean returnConnection(CallContext callContext) {
-        boolean returned = false;
-        IXConnection ixConnection = null;
-        EloConnectionDetails eloConnectionDetails = new EloConnectionDetails(this, callContext);
-        ixConnection = (IXConnection) callContext.get(ELO_CONNECTION_CONTEXT);
-        if (ixConnection != null) {
-            //return connection back to the pool
-            try {
-                this.eloConnectionPools.returnObject(eloConnectionDetails, ixConnection);
-                returned = true;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            //update call context accordingly
-            MutableCallContext mutableCallContext = (MutableCallContext) callContext;
-            mutableCallContext.remove(ELO_CONNECTION_CONTEXT);
-        }
-        return returned;
-    }
+//    public boolean returnConnection(CallContext callContext) {
+//        boolean returned = false;
+//        IXPoolableConnection ixPoolableConnection = (IXPoolableConnection) callContext.get(ELO_CONNECTION_CONTEXT);
+//        if (ixPoolableConnection != null) {
+//            //return connection back to the pool
+//            try {
+//                ixPoolableConnection.close();
+//                returned = true;
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            //update call context accordingly
+//            MutableCallContext mutableCallContext = (MutableCallContext) callContext;
+//            mutableCallContext.remove(ELO_CONNECTION_CONTEXT);
+//        }
+//        return returned;
+//    }
 
-    public IXConnection getAdminConnection() {
-        return getConnection(null);
-    }
+//    public IXConnection getAdminConnection() throws Exception {
+//        IXConnectionKey ixConnectionKey = createIXConnectionKey(null);
+//        IXPoolableConnection ixPoolableConnection = this.ixPoolableConnectionManager.retrieveConnection(ixConnectionKey);
+//        return ixPoolableConnection.getIxConnection();
+//    }
 
-    public boolean returnAdminConnection(IXConnection ixConnection) {
-        boolean returned = false;
-        EloConnectionDetails eloConnectionDetails = new EloConnectionDetails(this, null);
-        //return connection back to the pool
-        try {
-            this.eloConnectionPools.returnObject(eloConnectionDetails, ixConnection);
-            returned = true;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return returned;
-    }
+//    public boolean returnAdminConnection(IXConnection ixConnection) {
+//        boolean returned = false;
+//        IXConnection ixConnection1;
+//        EloConnectionDetails eloConnectionDetails = new EloConnectionDetails(this, null);
+//        //return connection back to the pool
+//        try {
+//            this.eloConnectionPools.returnObject(eloConnectionDetails, ixConnection);
+//            returned = true;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return returned;
+//    }
+
 }

@@ -23,10 +23,10 @@
 //package org.cmis.server.filebridge;
 //
 //import java.math.BigInteger;
-//import java.util.ArrayList;
-//import java.util.Collections;
-//import java.util.List;
-//import java.util.Map;
+//import java.utils.ArrayList;
+//import java.utils.Collections;
+//import java.utils.List;
+//import java.utils.Map;
 //
 //import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 //import org.apache.chemistry.opencmis.commons.server.CallContext;

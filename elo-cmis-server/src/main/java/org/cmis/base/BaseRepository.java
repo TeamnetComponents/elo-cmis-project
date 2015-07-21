@@ -21,7 +21,6 @@ import java.util.*;
  * Base Repository - Utils for repositories
  */
 public abstract class BaseRepository<T extends CallContextAwareCmisService> {
-    private static final Logger LOG = LoggerFactory.getLogger(BaseRepository.class);
 
     private T cmisService;
 
@@ -501,7 +500,7 @@ public abstract class BaseRepository<T extends CallContextAwareCmisService> {
 
     //public abstract List<RenditionData> getRenditions(String objectId, String renditionFilter, BigInteger maxItems, BigInteger skipCount);
 
-    //public abstract void moveObject(Holder<String> objectId, String targetFolderId, String sourceFolderId);
+    public abstract void moveObject(Holder<String> objectId, String targetFolderId, String sourceFolderId);
 
     public abstract void setContentStream(Holder<String> objectId, Boolean overwriteFlag, Holder<String> changeToken, ContentStream contentStream);
 

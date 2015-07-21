@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Created by Lucian.Dragomir on 6/4/2014.
@@ -25,6 +27,10 @@ public class CmisServiceParameters {
 
     public CmisServiceParameters(Map<String, String> parameters) {
         this.parameters = parameters;
+    }
+
+    public CmisServiceParameters(Properties parameters) {
+        this.parameters = toMap(parameters);
     }
 
     public void setParameters(Map<String, String> parameters) {
@@ -69,5 +75,13 @@ public class CmisServiceParameters {
             return def;
         }
         return Boolean.parseBoolean(value);
+    }
+
+    protected static Map<String, String> toMap(Properties properties) {
+        Map context = new HashMap<String, String>();
+        for (Object propertyKey : properties.keySet()) {
+            context.put(propertyKey, properties.get(propertyKey));
+        }
+        return context;
     }
 }

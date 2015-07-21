@@ -2,9 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>elo-cmis-project</artifactId>
         <groupId>com.elo.cmis</groupId>
+        <artifactId>elo-cmis-project</artifactId>
         <version>2.0</version>
+        <relativePath>../../elo-cmis-project</relativePath>
     </parent>
 
     <groupId>com.elo.cmis</groupId>
@@ -14,9 +15,6 @@
     <name>elo-cmis-server</name>
     <url>http://maven.apache.org</url>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
     <build>
         <finalName>elo-cmis-server</finalName>
@@ -32,6 +30,34 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven-source-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
@@ -97,7 +123,6 @@
                     </linkedResources>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.codehaus.cargo</groupId>
                 <artifactId>cargo-maven2-plugin</artifactId>
@@ -126,27 +151,115 @@
         </plugins>
 
         <!--<resources>-->
-            <!--&lt;!&ndash;-->
-            <!--The application.info file is used to get the default application name and application version when creating-->
-            <!--the connection factory to ELO server.-->
-            <!--&ndash;&gt;-->
-            <!--<resource>-->
-                <!--<directory>src/main/resources</directory>-->
-                <!--<filtering>true</filtering>-->
-                <!--<includes>-->
-                    <!--<include>**/application.info</include>-->
-                    <!--<include>**/*.xml</include>-->
-                <!--</includes>-->
-            <!--</resource>-->
+        <!--&lt;!&ndash;-->
+        <!--The application.info file is used to get the default application name and application version when creating-->
+        <!--the connection factory to ELO server.-->
+        <!--&ndash;&gt;-->
+        <!--<resource>-->
+        <!--<directory>src/main/resources</directory>-->
+        <!--<filtering>true</filtering>-->
+        <!--<includes>-->
+        <!--<include>**/application.info</include>-->
+        <!--<include>**/*.xml</include>-->
+        <!--</includes>-->
+        <!--</resource>-->
         <!--</resources>-->
 
     </build>
 
     <dependencies>
+        <!--Javax servlet-->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.4</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.platform.common</groupId>
+            <artifactId>common-utils</artifactId>
+            <version>${common-utils.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.elo.cmis</groupId>
             <artifactId>elo-cmis-commons</artifactId>
             <version>2.0</version>
         </dependency>
+
+        <!--ELO -->
+        <dependency>
+            <groupId>de.elo.extension</groupId>
+            <artifactId>elo-loader</artifactId>
+            <version>${elo-loader.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.elo.extension</groupId>
+            <artifactId>elo-commons</artifactId>
+            <version>${elo-commons.version}</version>
+        </dependency>
+
+        <!--Apache dependencies-->
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>${commons-logging.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${commons-codec.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-pool</groupId>
+            <artifactId>commons-pool</artifactId>
+            <version>${commons-pool.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+        </dependency>
+
+
+        <!--Open CMIS Dependencies-->
+        <dependency>
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-server-bindings-war</artifactId>
+            <version>${opencmis.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-server-support</artifactId>
+            <version>${opencmis.version}</version>
+        </dependency>
+        <dependency><!-- for development only -->
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-server-bindings</artifactId>
+            <version>${opencmis.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--<dependency>
+        <groupId>org.apache.chemistry.opencmis</groupId>
+        <artifactId>chemistry-opencmis-client-impl</artifactId>
+        <version>${opencmis.version}</version>
+        </dependency>-->
+
+
+        <!--Spring framework-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
     </dependencies>
 </project>

@@ -19,7 +19,6 @@ import java.util.Map;
  * BaseTypeManager - Utils for cmis type manager
  */
 public abstract class BaseTypeManager<T extends CallContextAwareCmisService> {
-    private static final Logger LOG = LoggerFactory.getLogger(BaseTypeManager.class);
 
     private static final String NAMESPACE = "http://org.cmis";
     private static final TypeDefinitionFactory defaultTypeDefinitionFactory = TypeDefinitionFactory.newInstance();

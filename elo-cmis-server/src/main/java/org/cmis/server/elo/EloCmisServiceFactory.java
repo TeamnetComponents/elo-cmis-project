@@ -1,5 +1,7 @@
 package org.cmis.server.elo;
 
+import de.elo.extension.connection.IXPoolableConnectionManager;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
@@ -40,8 +42,6 @@ public class EloCmisServiceFactory extends AbstractServiceFactory {
     private CmisServiceWrapperManager cmisServiceWrapperManager;
     private CmisServiceParameters serviceParameters;
     private EloCmisConnectionManager eloCmisConnectionManager;
-    //private EloConnectionPool eloConnectionPool;
-
 
     private BigInteger defaultMaxItems;
     private BigInteger defaultDepth;
@@ -65,7 +65,6 @@ public class EloCmisServiceFactory extends AbstractServiceFactory {
         //this.serviceParameters = new CmisServiceParameters(parameters);
 
         this.eloCmisConnectionManager = new EloCmisConnectionManager(this.serviceParameters);
-        //this.eloConnectionPool = new EloConnectionPool(new EloConnectionPoolFactory(this.serviceParameters));
 
         // get configuration parameters from repository.properties file
         try {
@@ -96,24 +95,30 @@ public class EloCmisServiceFactory extends AbstractServiceFactory {
 
     @Override
     public CmisService getService(CallContext context) {
-        // get service object for this thread
-        CallContextAwareCmisService service = threadLocalService.get();
-        if (service == null) {
-            EloCmisService eloCmisService = new EloCmisService(this.eloCmisConnectionManager);
-            //EloCmisService eloCmisService = new EloCmisService(this.eloConnectionPool);
+        CallContextAwareCmisService service;
+        try {
+            // get service object for this thread
+            service = threadLocalService.get();
+            if (service == null) {
+                EloCmisService eloCmisService = new EloCmisService(this.eloCmisConnectionManager);
 
-            // wrap it with the chain of wrappers
-            service = (CallContextAwareCmisService) cmisServiceWrapperManager.wrap(eloCmisService);
-            threadLocalService.set(service);
+                // wrap it with the chain of wrappers
+                service = (CallContextAwareCmisService) cmisServiceWrapperManager.wrap(eloCmisService);
+                threadLocalService.set(service);
+            }
+
+            // Stash any object into the call context and then pass it to our service
+            // so that it can be shared with any extensions.
+            // Here is where you would put in a reference to a native api object if needed.
+            MutableCallContext mutableCallContext = (MutableCallContext) context;
+            service.setCallContext(mutableCallContext);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new CmisConnectionException(e.getMessage());
         }
-
-        // Stash any object into the call context and then pass it to our service
-        // so that it can be shared with any extensions.
-        // Here is where you would put in a reference to a native api object if needed.
-        MutableCallContext mutableCallContext = (MutableCallContext) context;
-        service.setCallContext(mutableCallContext);
-
         return service;
+
     }
 
     protected CmisServiceParameters getServiceParameters() {

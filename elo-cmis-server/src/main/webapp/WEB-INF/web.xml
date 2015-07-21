@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.4"
-    xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+         xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 
     <display-name>Elo CMIS Server</display-name>
 
     <!--<context-param>-->
-        <!--<param-name>spring.profiles.active</param-name>-->
-        <!--<param-value>dev</param-value>-->
+    <!--<param-name>spring.profiles.active</param-name>-->
+    <!--<param-value>dev</param-value>-->
     <!--</context-param>-->
 
     <welcome-file-list>
@@ -16,9 +16,9 @@
     </welcome-file-list>
 
     <!--<listener>-->
-        <!--<listener-class>org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener</listener-class>-->
+    <!--<listener-class>org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener</listener-class>-->
     <!--</listener>-->
-    
+
     <listener>
         <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
     </listener>
@@ -27,9 +27,7 @@
     </listener>
     <context-param>
         <param-name>contextClass</param-name>
-        <param-value>
-            org.springframework.web.context.support.AnnotationConfigWebApplicationContext
-        </param-value>
+        <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
     </context-param>
     <context-param>
         <param-name>contextConfigLocation</param-name>
@@ -42,6 +40,8 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
 
+
+
     <servlet>
         <servlet-name>cmisws10</servlet-name>
         <servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
@@ -51,7 +51,6 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
-    
     <servlet>
         <servlet-name>cmisws11</servlet-name>
         <servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
@@ -61,7 +60,6 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
-
     <servlet>
         <servlet-name>cmisatom10</servlet-name>
         <servlet-class>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</servlet-class>
@@ -76,7 +74,6 @@
         </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>
-
     <servlet>
         <servlet-name>cmisatom11</servlet-name>
         <servlet-class>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</servlet-class>
@@ -91,7 +88,6 @@
         </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>
-    
     <servlet>
         <servlet-name>cmisbrowser</servlet-name>
         <servlet-class>org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet</servlet-class>
@@ -107,22 +103,18 @@
         <servlet-name>cmisws10</servlet-name>
         <url-pattern>/services/*</url-pattern>
     </servlet-mapping>
-
     <servlet-mapping>
         <servlet-name>cmisws11</servlet-name>
         <url-pattern>/services11/*</url-pattern>
     </servlet-mapping>
-
     <servlet-mapping>
         <servlet-name>cmisatom10</servlet-name>
         <url-pattern>/atom/*</url-pattern>
     </servlet-mapping>
-    
     <servlet-mapping>
         <servlet-name>cmisatom11</servlet-name>
         <url-pattern>/atom11/*</url-pattern>
     </servlet-mapping>
-
     <servlet-mapping>
         <servlet-name>cmisbrowser</servlet-name>
         <url-pattern>/browser/*</url-pattern>

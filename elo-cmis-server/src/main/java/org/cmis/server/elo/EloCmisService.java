@@ -1,5 +1,7 @@
 package org.cmis.server.elo;
 
+import de.elo.extension.connection.IXConnectionKey;
+import de.elo.extension.connection.IXPoolableConnection;
 import de.elo.ix.client.IXConnection;
 import org.apache.chemistry.opencmis.commons.data.*;
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
@@ -8,6 +10,7 @@ import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionList;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.UnfileObject;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractCmisService;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
@@ -29,14 +32,9 @@ public class EloCmisService extends AbstractCmisService implements CallContextAw
 
     private CallContext context;
     private EloCmisConnectionManager eloCmisConnectionManager;
-    //private EloConnectionPool eloConnectionPool;
-    //private IXConnection eloConnection;
+    private IXPoolableConnection ixPoolableConnection;
     private Map<String, EloCmisRepository> eloCmisRepositoryMap;
 
-//    public EloCmisService(EloConnectionPool eloConnectionPool) {
-//        this.eloConnectionPool = eloConnectionPool;
-//        this.eloCmisRepositoryMap = null;
-//    }
 
     public EloCmisService(EloCmisConnectionManager eloCmisConnectionManager) {
         this.eloCmisConnectionManager = eloCmisConnectionManager;
@@ -60,15 +58,26 @@ public class EloCmisService extends AbstractCmisService implements CallContextAw
      */
     @Override
     public void setCallContext(CallContext context) {
-        this.context = context;
-        //repository map depends on the context
-        this.eloCmisRepositoryMap = EloCmisRepository.createEloCmisRepositoryMap(this, (ExtensionsData) null);
+        try {
+            this.context = context;
+            //repository map depends on the context
+            this.eloCmisRepositoryMap = EloCmisRepository.createEloCmisRepositoryMap(this, (ExtensionsData) null);
+        } catch (Exception e) {
+            throw new CmisConnectionException("Throw when setting CallContext. " + e.getMessage());
+        }
     }
 
     @Override
     public void close() {
-        returnConnection();
-        super.close();
+        try {
+            returnConnection();
+        } finally {
+            super.close();
+        }
+    }
+
+    protected Map<String, String> getCmisServiceParameters() {
+        return eloCmisConnectionManager.getCmisServiceParameters().getParameters();
     }
 
     /**
@@ -78,12 +87,30 @@ public class EloCmisService extends AbstractCmisService implements CallContextAw
      */
 
     protected IXConnection getConnection() {
-        return eloCmisConnectionManager.getConnection(this.getCallContext());
+        if (this.ixPoolableConnection != null) {
+            IXConnectionKey ixConnectionKey = this.eloCmisConnectionManager.createIXConnectionKey(this.context);
+            if (!this.ixPoolableConnection.hasIXConnectionKey(ixConnectionKey)) {
+                returnConnection();
+            }
+        }
+        if (this.ixPoolableConnection == null) {
+            this.ixPoolableConnection = this.eloCmisConnectionManager.getConnection(this.context);
+        }
+        return this.ixPoolableConnection.getIxConnection();
+        //return eloCmisConnectionManager.getConnection(this.getCallContext());
     }
 
-
     private void returnConnection() {
-        this.eloCmisConnectionManager.returnConnection(this.getCallContext());
+        if (this.ixPoolableConnection != null) {
+            try {
+                this.ixPoolableConnection.close();
+            } catch (Exception e) {
+                throw new CmisConnectionException("Unable to return connection from CmisService.", e);
+            } finally {
+                this.ixPoolableConnection = null;
+            }
+        }
+        //this.eloCmisConnectionManager.returnConnection(this.getCallContext());
     }
 
 
@@ -275,7 +302,7 @@ public class EloCmisService extends AbstractCmisService implements CallContextAw
 
     //TODO
     @Override
-     public FailedToDeleteData deleteTree(String repositoryId, String folderId, Boolean allVersions, UnfileObject unfileObjects, Boolean continueOnFailure, ExtensionsData extension) {
+    public FailedToDeleteData deleteTree(String repositoryId, String folderId, Boolean allVersions, UnfileObject unfileObjects, Boolean continueOnFailure, ExtensionsData extension) {
         return super.deleteTree(repositoryId, folderId, allVersions, unfileObjects, continueOnFailure, extension);
     }
 
@@ -334,7 +361,9 @@ public class EloCmisService extends AbstractCmisService implements CallContextAw
     //TODO
     @Override
     public void moveObject(String repositoryId, Holder<String> objectId, String targetFolderId, String sourceFolderId, ExtensionsData extension) {
-        super.moveObject(repositoryId, objectId, targetFolderId, sourceFolderId, extension);
+        //super.moveObject(repositoryId, objectId, targetFolderId, sourceFolderId, extension);
+        getEloCmisRepository(repositoryId, extension)
+                .moveObject(objectId, targetFolderId, sourceFolderId);
     }
 
     //TODO

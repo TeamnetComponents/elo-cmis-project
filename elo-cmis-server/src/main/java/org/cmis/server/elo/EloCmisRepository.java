@@ -22,6 +22,8 @@
  */
 package org.cmis.server.elo;
 
+import de.elo.extension.connection.EloUtilsConnection;
+import de.elo.extension.service.EloUtilsService;
 import de.elo.ix.client.*;
 import de.elo.utils.net.RemoteException;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
@@ -33,6 +35,7 @@ import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionContainer
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionList;
 import org.apache.chemistry.opencmis.commons.enums.*;
 import org.apache.chemistry.opencmis.commons.exceptions.*;
+import org.apache.chemistry.opencmis.commons.impl.MimeTypes;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.*;
 import org.apache.chemistry.opencmis.commons.impl.server.ObjectInfoImpl;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
@@ -40,6 +43,7 @@ import org.cmis.base.BaseRepository;
 import org.cmis.server.filebridge.FileBridgeUtils;
 import org.cmis.util.CmisUtils;
 import org.cmis.util.DateUtil;
+import org.platform.common.utils.file.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,8 +79,12 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
     //DONE
     private EloCmisRepository(EloCmisService cmisService, RepositoryInfo repositoryInfo, ExtensionsData extensionsData) {
         super(cmisService);
-        this.repositoryInfo = repositoryInfo;
-        this.typeManager = new EloCmisTypeManager(cmisService);
+        try {
+            this.repositoryInfo = repositoryInfo;
+            this.typeManager = new EloCmisTypeManager(cmisService);
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
     //DONE
@@ -252,7 +260,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
                     repositoryInfo.setProductVersion(serverInfo.getVersion());
                     repositoryInfo.setVendorName("ELO Digital Office");
                     repositoryInfo.setThinClientUri(indexServerForArchive.getUrl());
-                    repositoryInfo.setRootFolder(EloCmisUtils.getFileUtilsElo().getRootPath());
+                    repositoryInfo.setRootFolder(EloCmisUtils.getFileUtilsElo().getRootPathDefault());
                     repositoryInfo.setChangesIncomplete(true);
                     repositoryInfo.setCapabilities(createRepositoryInfoCapabilities(cmisService, repositoryInfo.getId(), extensionsData));
                     repositoryInfo.setAclCapabilities(createRepositoryInfoAclCapabilities(cmisService, repositoryInfo.getId(), extensionsData));
@@ -352,6 +360,10 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
             } catch (Exception e) {
                 //do nothing
             }
+            //if document version can not be retrieved from the editInfo try to get if from the sord
+            if (lastDocumentVersion == null) {
+                lastDocumentVersion = sord.getDocVersion();
+            }
         } else if (object instanceof Sord) {
             editInfo = null;
             sord = (Sord) object;
@@ -374,7 +386,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         //Set<String> filter = (orgfilter == null ? null : new HashSet<String>(orgfilter));
 
         // find base type
-        BaseTypeId baseTypeId = EloCmisUtils.getBaseTypeId(sord);
+        BaseTypeId baseTypeId = EloCmisTypeManager.getBaseTypeId(sord);
 
         if (baseTypeId.equals(BaseTypeId.CMIS_FOLDER)) {
             objectInfo.setContentType(null);
@@ -412,7 +424,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         // let's prepare properties
         try {
             // id
-            String id = EloCmisUtils.calcObjectId(editInfo, sord, docVersion);
+            String id = EloUtilsService.calcObjectId(editInfo, sord, docVersion);
 //            if (sord.getDocVersion() != null) {
 //                id = EloCmisUtils.calcObjectId(String.valueOf(sord.getId()), String.valueOf(sord.getDoc()));
 //            }
@@ -429,7 +441,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
             addPropertyId(properties, baseTypeId.value(), filter, PropertyIds.BASE_TYPE_ID, baseTypeId.value());
 
             //type id
-            String objectTypeId = EloCmisTypeManager.convertSord2CmisTypeId(sord);
+            String objectTypeId = EloCmisTypeManager.getTypeId(sord);
             objectInfo.setTypeId(objectTypeId);
             addPropertyId(properties, baseTypeId.value(), filter, PropertyIds.OBJECT_TYPE_ID, objectTypeId);
 
@@ -475,12 +487,12 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
             if (baseTypeId.equals(BaseTypeId.CMIS_FOLDER)) {
                 // base type and type name
                 //String path = sord.getRefPaths()[0].getPathAsString() + (EloCmisUtils.isRootFolder(sord) ? "" : (EloCmisUtils.isRootFolder(sord.getParentId()) ? "" : EloCmisUtils.FOLDER_DELIMITER_ELO) + sord.getName());
-                String path = EloCmisUtils.getPathElo(sord);
-                path = EloCmisUtils.convertEloPath2CmisPath(EloCmisUtils.getPathElo(sord));
+                String path = EloUtilsService.getPathElo(sord);
+                path = EloCmisUtils.convertEloPath2CmisPath(EloUtilsService.getPathElo(sord));
                 addPropertyString(properties, baseTypeId.value(), filter, PropertyIds.PATH, path);
 
 //                // folder properties
-                String parentId = EloCmisUtils.isRootFolder(sord) ? null : String.valueOf(sord.getParentId());
+                String parentId = EloUtilsService.isRootFolder(sord) ? null : String.valueOf(sord.getParentId());
                 if (parentId != null) {
                     addPropertyId(properties, baseTypeId.value(), filter, PropertyIds.PARENT_ID, parentId);
                 }
@@ -488,7 +500,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
 
                 addPropertyIdList(properties, baseTypeId.value(), filter, PropertyIds.ALLOWED_CHILD_OBJECT_TYPE_IDS, null);
             } else if (baseTypeId.equals(BaseTypeId.CMIS_DOCUMENT)) {
-                String path = EloCmisUtils.convertEloPath2CmisPath(EloCmisUtils.getPathElo(sord, sord.getName()));
+                String path = EloCmisUtils.convertEloPath2CmisPath(EloUtilsService.getPathElo(sord, sord.getName()));
                 //addPropertyString(properties, baseTypeId.value(), filter, PropertyIds.PATH, path);
 
                 addPropertyBoolean(properties, baseTypeId.value(), filter, PropertyIds.IS_IMMUTABLE, false);
@@ -533,8 +545,9 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
                     objectInfo.setContentType(docVersion.getContentType());
                     addPropertyString(properties, baseTypeId.value(), filter, PropertyIds.CONTENT_STREAM_MIME_TYPE, docVersion.getContentType());
 
-                    objectInfo.setFileName(sord.getName() + "." + docVersion.getExt());
-                    addPropertyString(properties, baseTypeId.value(), filter, PropertyIds.CONTENT_STREAM_FILE_NAME, sord.getName() + "." + docVersion.getExt());
+                    String fileName = calculateFileName(sord.getName(), docVersion.getExt(), docVersion.getContentType(), docVersion.getVersion());
+                    objectInfo.setFileName(fileName);
+                    addPropertyString(properties, baseTypeId.value(), filter, PropertyIds.CONTENT_STREAM_FILE_NAME, fileName);
                 }
 
                 addPropertyId(properties, baseTypeId.value(), filter, PropertyIds.CONTENT_STREAM_ID, String.valueOf((docVersion != null) ? docVersion.getId() : null));
@@ -557,12 +570,12 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         List<ObjKey> objKeyList = new ArrayList<>();
         try {
             String cmisTypeId = (String) properties.getProperties().get(PropertyIds.OBJECT_TYPE_ID).getValues().get(0);
-            String maskId = String.valueOf(EloCmisTypeManager.convertCmisType2EloMaskId(getRepositoryId(), cmisTypeId));
+            String maskId = String.valueOf(EloCmisTypeManager.getMaskId(getRepositoryId(), cmisTypeId));
             TypeDefinition typeDefinition = typeManager.getTypeDefinition(cmisTypeId);
             for (PropertyData propertyData : properties.getProperties().values()) {
-                if (EloCmisTypeManager.isCustomCmisProperty(propertyData.getId())) {
+                if (EloCmisTypeManager.isCustomProperty(propertyData.getId())) {
                     ObjKey objKey = new ObjKey();
-                    int eloObjKeyId = EloCmisTypeManager.convertCmisPropertyId2ObjKeyIdElo(propertyData.getId());
+                    int eloObjKeyId = EloCmisTypeManager.getObjKeyId(propertyData.getId());
                     objKey.setId(eloObjKeyId);
                     objKey.setName(propertyData.getDisplayName());
                     objKey.setData((String[]) propertyData.getValues().toArray());
@@ -575,21 +588,34 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         }
     }
 
+    private Locale getServerDefaultLocale() {
+        return EloUtilsConnection.getServerLocale(getCmisService().getCmisServiceParameters());
+    }
 
     private void addObjKeysElo2CmisProperties(PropertiesImpl properties, Sord sord) {
         try {
-            String cmisTypeId = EloCmisTypeManager.convertSord2CmisTypeId(sord);
+            if (sord.getId() == 19) {
+                System.out.println("***");
+            }
+
+            String cmisTypeId = EloCmisTypeManager.getTypeId(sord);
             String cmisPropertyId = null;
             TypeDefinition typeDefinition = typeManager.getTypeDefinition(cmisTypeId);
+            if (typeDefinition == null) {
+                System.out.println("***");
+            }
+            //IXConnection ixConnection = this.getCmisService().retrieveConnection();
+            Locale locale = getServerDefaultLocale();
             for (ObjKey objKey : sord.getObjKeys()) {
-                cmisPropertyId = EloCmisTypeManager.convertObjKeyIdElo2CmisPropertyId(objKey.getId());
+                cmisPropertyId = EloCmisTypeManager.getPropertyId(objKey.getId());
                 PropertyDefinition propertyDefinition = typeDefinition.getPropertyDefinitions().get(cmisPropertyId);
                 PropertyData propertyData = null;
                 if (propertyDefinition != null) {
                     if (propertyDefinition.getPropertyType().equals(PropertyType.DECIMAL)) {
                         if (objKey.getData() != null && objKey.getData().length > 0 && objKey.getData()[0] != null) {
 //                          propertyData = new PropertyDecimalImpl(cmisPropertyId, BigDecimal.valueOf(Double.parseDouble(objKey.getData()[0])));
-                            Number objKeyData = EloCmisUtils.getEloNumberValueAsDecimal(objKey.getData()[0]);
+//                            Number objKeyData = EloUtilsService.getEloNumberValueAsDecimal(objKey.getData()[0]);
+                            Number objKeyData = EloUtilsService.getEloNumberValueAsDecimal(locale, objKey.getData()[0]);
                             propertyData = new PropertyDecimalImpl(cmisPropertyId, new BigDecimal(objKeyData.toString()));
                         }
                     }
@@ -766,7 +792,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
             throw new CmisRuntimeException(e.getMessage(), e);
         }
 
-        if (!EloCmisUtils.getBaseTypeId(sordParent).equals(BaseTypeId.CMIS_FOLDER)) {
+        if (!EloCmisTypeManager.getBaseTypeId(sordParent).equals(BaseTypeId.CMIS_FOLDER)) {
             throw new CmisObjectNotFoundException("Not a folder!");
         }
 
@@ -783,8 +809,14 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         findInfo.setFindChildren(new FindChildren());
         findInfo.getFindChildren().setParentId(sordParent.getGuid());
 
-        List<Sord> sordChildList = EloCmisUtils.findSords(findInfo, maxItems, skipCount, ixConnection);
-        for (Sord sordChild : sordChildList) {
+        List<Sord> sordChildList = null;
+        try {
+            sordChildList = EloUtilsService.findSords(findInfo, maxItems, skipCount, ixConnection);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+        List<Sord> sordCmisFilteredChildList = typeManager.filterCmisSords(sordChildList);
+        for (Sord sordChild : sordCmisFilteredChildList) {
 
             // build and add child object
             ObjectInFolderDataImpl objectInFolder = new ObjectInFolderDataImpl();
@@ -839,15 +871,15 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         Sord sord = null;
         try {
             ixConnection = this.getCmisService().getConnection();
-            String documentId = EloCmisUtils.getDocumentId(objectId);
-            String sordId = EloCmisUtils.getSordId(objectId);
+            String documentId = EloUtilsService.getDocumentId(objectId);
+            String sordId = EloUtilsService.getSordId(objectId);
             sord = ixConnection.ix().checkoutSord(sordId, SordC.mbAll, LockC.NO);
         } catch (RemoteException e) {
             throw new CmisRuntimeException(e.getMessage(), e);
         }
 
         // don't climb above the root folder
-        if (EloCmisUtils.isRootFolder(sord)) {
+        if (EloUtilsService.isRootFolder(sord)) {
             return Collections.emptyList();
         }
 
@@ -944,9 +976,9 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
 
     private ObjKey[] updateProperties(Map<Integer, ObjKey> objKeyMap, Properties properties, String cmisTypeIdOrName) {
         for (String cmisPropertyIdOrName : properties.getProperties().keySet()) {
-            if (EloCmisTypeManager.isCustomCmisProperty(cmisPropertyIdOrName)) {
-                String cmisPropertyId = EloCmisTypeManager.calculateCmisPropertyId(getRepositoryId(), cmisTypeIdOrName, cmisPropertyIdOrName);
-                int objKeyId = EloCmisTypeManager.convertCmisPropertyId2ObjKeyIdElo(cmisPropertyId);
+            if (EloCmisTypeManager.isCustomProperty(cmisPropertyIdOrName)) {
+                String cmisPropertyId = EloCmisTypeManager.getPropertyId(getRepositoryId(), cmisTypeIdOrName, cmisPropertyIdOrName);
+                int objKeyId = EloCmisTypeManager.getObjKeyId(cmisPropertyId);
                 List<String> objKeyValue = new ArrayList<>();
                 for (Object value : properties.getProperties().get(cmisPropertyId).getValues()) {
                     if (value != null) {
@@ -1006,13 +1038,13 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
 
             //check if folderid is folder type
             Sord parentSord = ixConnection.ix().checkoutSord(folderId, SordC.mbAll, LockC.NO);
-            if (parentSord == null || !EloCmisUtils.getBaseTypeId(parentSord).equals(BaseTypeId.CMIS_FOLDER)) {
+            if (parentSord == null || !EloCmisTypeManager.getBaseTypeId(parentSord).equals(BaseTypeId.CMIS_FOLDER)) {
                 throw new CmisObjectNotFoundException("Parent not found or is not a folder!");
             }
 
             String cmisTypeId = (String) properties.getProperties().get(PropertyIds.OBJECT_TYPE_ID).getValues().get(0);
-            String maskId = String.valueOf(EloCmisTypeManager.convertCmisType2EloMaskId(getRepositoryId(), cmisTypeId));
-            eloPath = EloCmisUtils.getPathElo(parentSord, sordName);
+            String maskId = String.valueOf(EloCmisTypeManager.getMaskId(getRepositoryId(), cmisTypeId));
+            eloPath = EloUtilsService.getPathElo(parentSord, sordName);
             try {
 
                 //editInfo = ixConnection.ix().checkoutSord(eloPath, EditInfoC.mbSord, LockC.NO);
@@ -1101,7 +1133,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         //return String.valueOf(sord.getId());
         //return String.valueOf(objectId);
         //return String.valueOf(sord.getId()) + ((objectId <= 0) ? "" : "-" + String.valueOf(objectId));
-        return EloCmisUtils.calcObjectId(sord, docVersion);
+        return EloUtilsService.calcObjectId(sord, docVersion);
     }
 
     //TODO
@@ -1125,19 +1157,19 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
 
             //check if folderid is folder type
             Sord parentSord = ixConnection.ix().checkoutSord(folderId, SordC.mbAll, LockC.NO);
-            if (parentSord == null || !EloCmisUtils.getBaseTypeId(parentSord).equals(BaseTypeId.CMIS_FOLDER)) {
+            if (parentSord == null || !EloCmisTypeManager.getBaseTypeId(parentSord).equals(BaseTypeId.CMIS_FOLDER)) {
                 throw new CmisObjectNotFoundException("Parent not found or is not a folder!");
             }
 
             //check if the folder already exists
             boolean checkExists = EloCmisUtils.existsChildSord(parentSord, name, ixConnection);
             if (checkExists) {
-                String checkCmisPath = EloCmisUtils.convertEloPath2CmisPath(EloCmisUtils.getPathElo(parentSord, name));
+                String checkCmisPath = EloCmisUtils.convertEloPath2CmisPath(EloUtilsService.getPathElo(parentSord, name));
                 throw new CmisStorageException("Folder '" + checkCmisPath + "' already exists.");
             }
 
             String cmisTypeId = (String) properties.getProperties().get(PropertyIds.OBJECT_TYPE_ID).getValues().get(0);
-            String maskId = String.valueOf(EloCmisTypeManager.convertCmisType2EloMaskId(getRepositoryId(), cmisTypeId));
+            String maskId = String.valueOf(EloCmisTypeManager.getMaskId(getRepositoryId(), cmisTypeId));
             editInfo = ixConnection.ix().createSord(folderId, maskId, EditInfoC.mbSord);
             sord = editInfo.getSord();
 
@@ -1174,8 +1206,8 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
 
     public void deleteObject(String objectId, Boolean allVersions) {
 
-        String documentId = EloCmisUtils.getDocumentId(objectId);
-        String sordId = EloCmisUtils.getSordId(objectId);
+        String documentId = EloUtilsService.getDocumentId(objectId);
+        String sordId = EloUtilsService.getSordId(objectId);
 
 
         if (sordId == null || sordId.isEmpty()) {
@@ -1186,12 +1218,12 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         try {
             //checkoutSord(ckeckPath, SordC.mbAll, LockC.NO);
 
-            if (documentId.equals(EloCmisUtils.DOCUMENT_ID_MISSING)) {
+            if (documentId.equals(EloUtilsService.DOCUMENT_ID_MISSING)) {
                 //delete folder or delete all versions of a document
                 Sord sord = ixConnection.ix().checkoutSord(sordId, SordC.mbAll, LockC.NO);
                 String parentSordId = String.valueOf(sord.getParentId());
                 deleteSord(ixConnection, sordId, parentSordId);
-            } else if (!documentId.equals(EloCmisUtils.DOCUMENT_ID_MISSING) && allVersions) {
+            } else if (!documentId.equals(EloUtilsService.DOCUMENT_ID_MISSING) && allVersions) {
                 deleteDocument(ixConnection, sordId);
             } else {
                 //delete a specific version of a document; the current working version of a document cannot be deleted
@@ -1252,46 +1284,70 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
     //public abstract AllowableActions getAllowableActions(String objectId);
 
 
+    public String calculateFileName(String fileName, String fileExtension, String mimeType, String fileVersion) {
+        String fileBaseName = EloCmisUtils.getFileUtilsElo().getFileBaseName(EloCmisUtils.getFileUtilsElo().getFileName(fileName));
+        if (fileExtension == null || fileExtension.isEmpty()) {
+            fileExtension = EloCmisUtils.getFileUtilsElo().getFileExtension(EloCmisUtils.getFileUtilsElo().getFileName(fileName));
+        }
+        String fileExtFromMimeType = MimeTypes.getExtension(MimeTypes.getMIMEType(fileExtension));
+        if ((!fileExtFromMimeType.equalsIgnoreCase(fileExtension)) && (MimeTypes.getMIMEType(fileExtension) == MimeTypes.getMIMEType(fileExtFromMimeType))) {
+            fileExtension = fileExtFromMimeType;
+        }
+        if (fileExtension != null && fileExtension.startsWith(FileUtils.getExtensionDelimiter())) {
+            fileExtension = fileExtension.substring(1);
+        }
+        return
+                fileBaseName +
+                        //((fileVersion == null || fileVersion.isEmpty()) ? "" : "[v" + fileVersion + "]") +
+                        ((fileExtension == null || fileExtension.isEmpty()) ? "" : FileUtils.getExtensionDelimiter() + fileExtension);
+    }
+
     @Override
     public ContentStream getContentStream(String objectId, String streamId, BigInteger offset, BigInteger length) {
         ContentStream contentStream = null;
 
         IXServicePortC CONST = null;
+        IXConnection ixConnection;
         EditInfo editInfo = null;
         Sord sord;
+        String url = null;
+
 
         if (streamId != null) {
             throw new CmisRuntimeException("StreamId not supported when getting object stream. StreamId = " + streamId + ".");
         }
 
         try {
-            IXConnection ixConnection = this.getCmisService().getConnection();
-            String documentId = EloCmisUtils.getDocumentId(objectId);
-            String sordId = EloCmisUtils.getSordId(objectId);
+            ixConnection = this.getCmisService().getConnection();
+            String documentId = EloUtilsService.getDocumentId(objectId);
+            String sordId = EloUtilsService.getSordId(objectId);
 
             if (streamId != null && !streamId.isEmpty()) {
                 editInfo = ixConnection.ix().checkoutDoc(null, streamId, EditInfoC.mbSordDoc, LockC.NO);
-            } else if (documentId.equals(EloCmisUtils.DOCUMENT_ID_MISSING)) {
+            } else if (documentId.equals(EloUtilsService.DOCUMENT_ID_MISSING)) {
                 editInfo = ixConnection.ix().checkoutSord(sordId, EditInfoC.mbSordDoc, LockC.NO);
             } else {
                 editInfo = ixConnection.ix().checkoutDoc(null, documentId, EditInfoC.mbSordDoc, LockC.NO);
             }
 
             sord = editInfo.getSord();
-            if (!EloCmisUtils.getBaseTypeId(sord).equals(BaseTypeId.CMIS_DOCUMENT)) {
-                throw new CmisStreamNotSupportedException("The object from path " + EloCmisUtils.convertEloPath2CmisPath(EloCmisUtils.getPathElo(sord)) + " is not a document.");
+            if (!EloCmisTypeManager.getBaseTypeId(sord).equals(BaseTypeId.CMIS_DOCUMENT)) {
+                throw new CmisStreamNotSupportedException("The object from path " + EloCmisUtils.convertEloPath2CmisPath(EloUtilsService.getPathElo(sord)) + " is not a document.");
             }
 
             DocVersion docVersion = editInfo.getDocument().getDocs()[0];
-            String url = docVersion.getUrl();
+            url = docVersion.getUrl();
             ContentStreamImpl contentStreamImpl = new ContentStreamImpl();
-            contentStreamImpl.setFileName(sord.getName() + (docVersion.getVersion() == null || docVersion.getVersion().length() == 0 ? "" : "_v" + docVersion.getVersion()) + "." + docVersion.getExt());
-            contentStreamImpl.setLength(length);
+
+            String fileName = calculateFileName(sord.getName(), docVersion.getExt(), docVersion.getContentType(), docVersion.getVersion());
+
             contentStreamImpl.setMimeType(docVersion.getContentType());
-            contentStreamImpl.setStream(ixConnection.download(url, (offset == null ? 0 : offset.longValue()), (length == null ? 0 : length.longValue())));
+            contentStreamImpl.setFileName(fileName);
+            contentStreamImpl.setLength(length);
+            contentStreamImpl.setStream(ixConnection.download(url, (offset == null ? 0 : offset.longValue()), (length == null ? -1 : length.longValue())));
             contentStream = contentStreamImpl;
         } catch (RemoteException e) {
-            throw new CmisRuntimeException(e.getMessage(), e);
+            throw new CmisRuntimeException(e.getMessage() + "\nDownload url: " + url, e);
         }
         return contentStream;
     }
@@ -1313,10 +1369,10 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         Sord sord = null;
         try {
             IXConnection ixConnection = this.getCmisService().getConnection();
-            String documentId = EloCmisUtils.getDocumentId(objectId);
-            String sordId = EloCmisUtils.getSordId(objectId);
+            String documentId = EloUtilsService.getDocumentId(objectId);
+            String sordId = EloUtilsService.getSordId(objectId);
             // having document id meanns we requesdted a specific version of the document
-            if (documentId.equals(EloCmisUtils.DOCUMENT_ID_MISSING)) {
+            if (documentId.equals(EloUtilsService.DOCUMENT_ID_MISSING)) {
                 editInfo = ixConnection.ix().checkoutSord(sordId, EditInfoC.mbSordDoc, LockC.NO);
             } else {
                 editInfo = ixConnection.ix().checkoutDoc(null, documentId, EditInfoC.mbSordDoc, LockC.NO);
@@ -1367,7 +1423,23 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
 
     //public abstract List<RenditionData> getRenditions(String objectId, String renditionFilter, BigInteger maxItems, BigInteger skipCount);
 
-    //public abstract void moveObject(Holder<String> objectId, String targetFolderId, String sourceFolderId);
+    @Override
+    public void moveObject(Holder<String> objectId, String targetFolderId, String sourceFolderId) {
+        if (objectId == null) {
+            throw new CmisInvalidArgumentException("Object id is not valid!");
+        }
+        IXConnection ixConnection = this.getCmisService().getConnection();
+        String sordId = EloUtilsService.getSordId(objectId.getValue());
+        // MOVE r1 -> o2
+        try {
+            Sord objectSord = ixConnection.ix().checkoutSord(sordId, SordC.mbAll, LockC.NO);
+            Sord targetSord = ixConnection.ix().checkoutSord(targetFolderId, SordC.mbAll, LockC.NO);
+
+            ixConnection.ix().copySord(targetSord.getGuid(), objectSord.getGuid(), null, CopySordC.MOVE);
+        } catch (RemoteException e) {
+            throw new CmisRuntimeException(e.getMessage());
+        }
+    }
 
     @Override
     public void setContentStream(Holder<String> objectId, Boolean overwriteFlag, Holder<String> changeToken, ContentStream contentStream) {
@@ -1381,11 +1453,11 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
     public void updateProperties(Holder<String> objectId, Holder<String> changeToken, Properties properties) {
 
         IXConnection ixConnection = this.getCmisService().getConnection();
-        String sordId = EloCmisUtils.getSordId(objectId.getValue());
+        String sordId = EloUtilsService.getSordId(objectId.getValue());
 
         try {
             Sord sord = ixConnection.ix().checkoutSord(sordId, SordC.mbAll, LockC.YES);
-            String cmisTypeId = EloCmisTypeManager.convertSord2CmisTypeId(sord);
+            String cmisTypeId = EloCmisTypeManager.getTypeId(sord);
             // map properties to object
             Map<Integer, ObjKey> objKeyMap = new HashMap<>();
             for (ObjKey objKey : sord.getObjKeys()) {
@@ -1395,7 +1467,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
             sord.setObjKeys(objKeys);
 
             for (PropertyData propertyData : properties.getProperties().values()) {
-                if (!EloCmisTypeManager.isCustomCmisProperty(propertyData.getId())) {
+                if (!EloCmisTypeManager.isCustomProperty(propertyData.getId())) {
                     if (propertyData.getId().equalsIgnoreCase(PropertyIds.NAME)) {
                         sord.setName(propertyData.getFirstValue().toString());
                     } else if (propertyData.getId().equalsIgnoreCase(PropertyIds.DESCRIPTION)) {
@@ -1423,8 +1495,8 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
     public void cancelCheckOut(String objectId) {
         /* ELO: If the document is only to be unlocked, see checkinSord. */
         IXConnection ixConnection = this.getCmisService().getConnection();
-        String documentId = EloCmisUtils.getDocumentId(objectId);
-        String sordId = EloCmisUtils.getSordId(objectId);
+        String documentId = EloUtilsService.getDocumentId(objectId);
+        String sordId = EloUtilsService.getSordId(objectId);
         try {
             EditInfo editInfo = ixConnection.ix().checkoutSord(sordId, EditInfoC.mbSord, LockC.YES);
             ixConnection.ix().checkinSord(editInfo.getSord(), SordC.mbOnlyLock, LockC.YES);
@@ -1445,7 +1517,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         try {
 
             String objectIdValue = objectId.getValue();
-            String sordId = EloCmisUtils.getSordId(objectIdValue);
+            String sordId = EloUtilsService.getSordId(objectIdValue);
             // Check document out
             ed = ixConnection.ix().checkoutDoc(sordId, null, EditInfoC.mbSordDocAtt, LockC.YES);
             Document doc = ed.getDocument();
@@ -1496,7 +1568,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         EditInfo ed;
         try {
             String objectIdValue = objectId.getValue();
-            String sordId = EloCmisUtils.getSordId(objectIdValue);
+            String sordId = EloUtilsService.getSordId(objectIdValue);
             /*Reads the indexing information and the download URL of a document from ELO. */
             ixConnection.ix().checkoutDoc(sordId, null, EditInfoC.mbSordDoc, LockC.YES);
             //todo create
@@ -1530,8 +1602,8 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
             The document member of the returned object contains the URL from where the document tempFile can be read.
             Use raw HTTP functions to download the tempFile. */
             //TODO De preferat sa se transmita docId si nu objectId la getContentStream, pentru a downloada ultima versiune
-            String documentId = EloCmisUtils.getDocumentId(objectId);
-            String sordId = EloCmisUtils.getSordId(objectId);
+            String documentId = EloUtilsService.getDocumentId(objectId);
+            String sordId = EloUtilsService.getSordId(objectId);
             editInfo = ixConnection.ix().checkoutDoc(sordId, "-1", EditInfoC.mbSordDocAtt, LockC.NO);
             Document document = editInfo.getDocument();
             DocVersion[] docVersions = document.getDocs();
@@ -1558,7 +1630,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
 //        //get object data
 //        Sord sord = null;
 //        try {
-//            IXConnection ixConnection = this.getCmisService().getConnection();
+//            IXConnection ixConnection = this.getCmisService().retrieveConnection();
 //            sord = ixConnection.ix().checkoutSord(eloPath, SordC.mbAll, LockC.NO);
 //        } catch (RemoteException e) {
 //            e.printStackTrace();
@@ -2226,7 +2298,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
 //                                      String renditionFilter, Boolean includePolicyIds, Boolean includeAcl) {
 //        EditInfo ed2 = null;
 //        Sord sordResult;
-//        IXConnection ixConnection = this.getCmisService().getConnection();
+//        IXConnection ixConnection = this.getCmisService().retrieveConnection();
 //        // check path
 //        if (path == null || path.length() == 0
 //                || path.charAt(0) != '/') {
@@ -3547,6 +3619,7 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
 
         return result;
     }
+
 
     /**
      * Checks if the given name is valid for a file system.

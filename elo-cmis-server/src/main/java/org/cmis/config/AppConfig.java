@@ -12,6 +12,7 @@ import org.springframework.core.annotation.Order;
  * Clasa de configurare aplicatie ACP.
  * Se seteaza proprietati specifice JPA, Hibernate, se expune DataSource, TransactionManager, EntityManagerFactory.
  */
+
 @Configuration
 @ImportResource({ "classpath*:/elo-cmis-application.xml"})
 @ComponentScan( basePackages = "org.cmis" )

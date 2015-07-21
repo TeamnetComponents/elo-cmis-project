@@ -23,10 +23,10 @@
 //package org.cmis.server.filebridge;
 //
 //import java.math.BigInteger;
-//import java.util.Collection;
-//import java.util.HashMap;
-//import java.util.List;
-//import java.util.Map;
+//import java.utils.Collection;
+//import java.utils.HashMap;
+//import java.utils.List;
+//import java.utils.Map;
 //
 //import org.apache.chemistry.opencmis.commons.definitions.MutableDocumentTypeDefinition;
 //import org.apache.chemistry.opencmis.commons.definitions.MutableFolderTypeDefinition;

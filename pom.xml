@@ -5,9 +5,19 @@
     <groupId>com.elo.cmis</groupId>
     <artifactId>elo-cmis-project</artifactId>
     <version>2.0</version>
+
     <modules>
+        <!--ELO Extension Modules-->
+        <module>elo-loader</module>
+        <module>elo-commons</module>
+        <module>elo-jmeter</module>
+
+        <!--CMIS Modules-->
         <module>elo-cmis-commons</module>
         <module>elo-cmis-server</module>
+
+        <!--Utils Modules-->
+        <module>common-utils</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -18,48 +28,67 @@
         <repository>
             <id>tni-hq-artifact</id>
             <name>tni-hq-artifact-releases</name>
-            <url>http://tni-hq-artifactory/elo</url>
+            <url>http://tni-hq-artifactory/tn-components</url>
         </repository>
     </repositories>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!--Java-->
         <java.version>1.7</java.version>
 
+        <!--Project-->
+        <project.version>2.0</project.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
-        <maven-war-plugin.version>2.4</maven-war-plugin.version>
+        <!--Maven-->
+        <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
+        <maven-source-plugin.version>2.4</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>2.10.1</maven-javadoc-plugin.version>
+        <maven-war-plugin.version>2.6</maven-war-plugin.version>
         <maven-release-plugin.version>3.1</maven-release-plugin.version>
+
+        <!--Artifactory-->
         <artifactory-maven-plugin.version>2.2.1</artifactory-maven-plugin.version>
 
+        <!--Containers-->
         <cargo-maven2.version>1.4.7</cargo-maven2.version>
         <cargo-maven2.port>8082</cargo-maven2.port>
         <tomcat7-maven-plugin.version>2.0</tomcat7-maven-plugin.version>
         <tomcat7-maven-plugin.port>8083</tomcat7-maven-plugin.port>
 
-        <!-- OpenCMIS version -->
-        <opencmis.version>0.12.0</opencmis.version>
+        <!--OpenCMIS-->
+        <opencmis.version>0.13.0</opencmis.version>
 
-        <!-- ELO version -->
-        <elo-client.version>8.00.040.392</elo-client.version>
+        <!--ELO client-->
+        <!--<elo-client.version>8.00.040.392</elo-client.version>-->
+        <elo-client.version>9.00.014.012</elo-client.version>
+        <!--<elo-client.version>${elo-client.version.profile}</elo-client.version>-->
+
+        <!-- ELO Extension-->
+        <elo-loader.version>1.0</elo-loader.version>
+        <elo-commons.version>1.0</elo-commons.version>
 
         <!--Testing configuration-->
         <junit.version>4.11</junit.version>
 
         <!--Logging configuration-->
         <slf4j.version>1.7.5</slf4j.version>
-        <log4j.version>1.2.16</log4j.version>
-
+        <log4j.version>1.2.17</log4j.version>
 
         <!--Apache commons jars-->
         <commons-logging.version>1.1.3</commons-logging.version>
         <commons-codec.version>1.9</commons-codec.version>
-
         <commons-pool.version>1.6</commons-pool.version>
         <commons-lang3.version>3.3.2</commons-lang3.version>
 
         <!--Spring Framework-->
         <spring.version>4.0.5.RELEASE</spring.version>
+
+        <!--Jmeter Classes-->
+        <ApacheJMeter.version>2.12</ApacheJMeter.version>
+
+        <!--Platform version-->
+        <common-utils.version>1.0</common-utils.version>
 
     </properties>
 
@@ -105,7 +134,7 @@
                                 <version>${project.version}</version>
                             </deployProperties>
                             <publisher>
-                                <contextUrl>hxtxtxp://tni-hq-artifactory</contextUrl>
+                                <contextUrl>http://tni-hq-artifactory</contextUrl>
                                 <username>lucian.dragomir</username>
                                 <password>lucian1234</password>
                                 <repoKey>tn-components</repoKey>
@@ -121,109 +150,20 @@
 
     <dependencies>
 
-        <!--ELO Dependencies-->
-        <dependency>
-            <groupId>de.elo</groupId>
-            <artifactId>elo-client</artifactId>
-            <version>${elo-client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.elo</groupId>
-            <artifactId>elo-utils</artifactId>
-            <version>${elo-client.version}</version>
-        </dependency>
-
-        <!--Open CMIS Dependencies-->
-        <dependency>
-            <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-server-bindings-war</artifactId>
-            <version>${opencmis.version}</version>
-            <type>war</type>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-server-support</artifactId>
-            <version>${opencmis.version}</version>
-        </dependency>
-        <dependency><!-- for development only -->
-            <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-server-bindings</artifactId>
-            <version>${opencmis.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <!--<dependency>
-            <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-client-impl</artifactId>
-            <version>${opencmis.version}</version>
-        </dependency>-->
-
-        <!--Apache dependencies-->
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>${commons-logging.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>${commons-codec.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-pool</groupId>
-            <artifactId>commons-pool</artifactId>
-            <version>${commons-pool.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
-        </dependency>
-
-        <!--Javax servlet-->
-        <dependency><!-- for development only -->
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.4</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- enables OpenCMIS frame logging to log4j -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-
-        <!--Spring framework-->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>${spring.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>commons-logging</artifactId>
-                    <groupId>commons-logging</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!--JUnit-->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-        </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>default</id>
-            <properties>
-                <env>default</env>
-            </properties>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-    </profiles>
+    <!--<profiles>-->
+        <!--<profile>-->
+            <!--<id>ELO 8.00.040.392</id>-->
+            <!--<properties>-->
+                <!--<elo-client.version>8.00.040.392</elo-client.version>-->
+            <!--</properties>-->
+        <!--</profile>-->
+        <!--<profile>-->
+            <!--<id>ELO 9.00.014.012</id>-->
+            <!--<properties>-->
+                <!--<elo-client.version>9.00.014.012</elo-client.version>-->
+            <!--</properties>-->
+        <!--</profile>-->
+    <!--</profiles>-->
 </project>

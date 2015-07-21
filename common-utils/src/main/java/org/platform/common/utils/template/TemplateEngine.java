@@ -1,10 +1,9 @@
-package org.cmis.util;
+package org.platform.common.utils.template;
 
 
 //import org.apache.velocity.VelocityContext;
 //import org.apache.velocity.app.Velocity;
 
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -107,7 +106,7 @@ public abstract class TemplateEngine {
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    // BASIC IMPLeEMENTATION
+    // BASIC IMPLEEMENTATION
     public static class TemplateEngineImpl_Basic extends TemplateEngine {
 
         @Override
