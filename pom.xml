@@ -60,8 +60,8 @@
         <opencmis.version>0.13.0</opencmis.version>
 
         <!--ELO client-->
-        <!--<elo-client.version>8.00.040.392</elo-client.version>-->
-        <elo-client.version>9.00.014.012</elo-client.version>
+        <elo-client.version>8.00.040.392</elo-client.version>
+        <!--<elo-client.version>9.00.014.012</elo-client.version>-->
         <!--<elo-client.version>${elo-client.version.profile}</elo-client.version>-->
 
         <!-- ELO Extension-->
