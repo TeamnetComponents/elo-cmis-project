@@ -37,17 +37,17 @@ In case of embedding the configuration resources in the .war file they must be l
 
 The server and log4j configuration files are specified to the application by setting the following JAVA_OPTS environment variables before the server is started:
 
-* **-Delo.cmis.configuration.profile**=default   (or the profileName located in the /WEB-INF/classes/profiles/)
+* **-D${ApplicationPathDellimitedByDot}**=${ProfileName}
     <BR/>This variable is optional and it is used to specify the profile name used for getting the configuration files in case the resources are embedded in the war file. In case the resources are referenced externally then this variable will not be set.
     <BR/>
     <BR/>
 
-* **-Delo.cmis.configuration.server**=/cmis-elo-server.properties 
+* **-Delo.cmis.${ProfileName}.configuration.server**=/usr/apache-tomcat-7.0.57/conf/elo-cmis-server.properties 
     <BR/>This variable is mandatory and contains the path pointing to the **server configuration file**. This path must be relative to the profile directory that is embedded in war or absolute to the server in case profile variable is not set.
     <BR/>
     <BR/>
 
-* **-Delo.cmis.configuration.log4j**=/cmis-elo-log4j.properties 
+* **-Delo.cmis.${ProfileName}.configuration.log4j**=/usr/apache-tomcat-7.0.57/conf/elo-cmis-log4j.properties
     <BR/>This variable is optional and contains the path pointing to the **log4j configuration file** in case you need finer grained control over the logging in the server. This path must be relative to the profile directory that is embedded in war or absolute to the server in case profile variable is not set.
     <BR/>
         
@@ -55,8 +55,10 @@ Below is an example of setenv.sh or setenv.bat script that can be used for setti
 
 ```bash
 CATALINA_OPTS="$CATALINA_OPTS -Xms4096m -Xmx4096m -XX:MaxPermSize=2048m"
-JAVA_OPTS="$JAVA_OPTS -Delo.cmis.configuration.server=/usr/apache-tomcat-7.0.57/conf/elo-cmis-server.properties"
-JAVA_OPTS="$JAVA_OPTS -Delo.cmis.configuration.log4j=/usr/apache-tomcat-7.0.57/conf/elo-cmis-log4j.properties"
+JAVA_OPTS="$JAVA_OPTS -Dusr.apache-tomcat-7.0.57.webapps.elo-cmis-server-2.0=CMISFO"
+JAVA_OPTS="$JAVA_OPTS -Delo.cmis.CMISFO.configuration.server=/usr/apache-tomcat-7.0.57/conf/elo-cmis-server.properties"
+JAVA_OPTS="$JAVA_OPTS -Delo.cmis.CMISFO.configuration.log4j=/usr/apache-tomcat-7.0.57/conf/elo-cmis-log4j.properties"
+
 ```
 
 ###3.3 Elo Document Management 
@@ -70,7 +72,7 @@ The following configurations are required in Elo document management server:
 
 The deployed configuration can be tested using the **OpenCMIS Workbench** application that is the CMIS desktop client for developers.
 
-The application can be downloaded from [here](http://chemistry.apache.org/java/download.html)
+The application can be downloaded from [here](http://www.apache.org/dyn/closer.cgi/chemistry/opencmis/0.13.0/chemistry-opencmis-workbench-0.13.0-full.zip)
 
 Below is an connection configuration that can be used for starting the workbench application:
 
@@ -93,17 +95,21 @@ Below are the relevant links to the demo environment:
 <b>ELO DMS Server</b>
 <a href="http://sol-w2k8-04:8080/ig2-elo2/pages/startup.jsp" target="_blank">Elo Web Client</a>
 <a href="http://sol-w2k8-04:8080/AdminConsole/" target="_blank">Elo Admin Console</a>
+<p>User: Administrator</p>
+<p>Password: elo</p>
+
+where sol-w2k8-04 is 10.6.35.114
 
 <b>Apache Chemistry Workbench</b>
-Please download the java application from the following link <a href="http://sol-w2k8-04:8080/AdminConsole/" target="_blank">Apache Chemistry Workbench</a>
+Please download the java application from the following link <a href="http://www.apache.org/dyn/closer.cgi/chemistry/opencmis/0.13.0/chemistry-opencmis-workbench-0.13.0-full.zip" target="_blank">Apache Chemistry Workbench</a>
 
 After downloading it, start and send the following connection configuration: 
  
 ``` 
 org.apache.chemistry.opencmis.binding.spi.type=browser
-org.apache.chemistry.opencmis.binding.browser.url=http://<server_name>:<server_port>/<application_name ... can be elo-cmis-server>/browser
-org.apache.chemistry.opencmis.user=<user>
-org.apache.chemistry.opencmis.password=<password>
+org.apache.chemistry.opencmis.binding.browser.url=http://sol-w2k8-04:8080/elo-cmis-server-2.0/browser
+org.apache.chemistry.opencmis.user=Administrator
+org.apache.chemistry.opencmis.password=elo
 org.apache.chemistry.opencmis.binding.compression=true
 org.apache.chemistry.opencmis.binding.cookies=true
 ```
