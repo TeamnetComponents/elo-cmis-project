@@ -1,6 +1,5 @@
 package org.cmis.server.elo;
 
-import de.elo.extension.connection.IXPoolableConnectionManager;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;

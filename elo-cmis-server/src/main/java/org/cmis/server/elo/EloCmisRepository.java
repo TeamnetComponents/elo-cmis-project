@@ -233,7 +233,8 @@ public class EloCmisRepository extends BaseRepository<EloCmisService> {
         } catch (MalformedURLException e) {
             //keep initial servername
         }
-        return serverName + "_" + indexServerForArchive.getArcName();
+//        return serverName + "_" + indexServerForArchive.getArcName();
+        return indexServerForArchive.getArcName();
     }
 
     private static String calcRepositoryName(ServerInfo serverInfo, IndexServerForArchive indexServerForArchive) {

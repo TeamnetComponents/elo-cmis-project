@@ -678,6 +678,8 @@ public class EloUtilsService {
 
     public static boolean checkIfGroupExist(IXConnection ixConnection, String groupName) {
         try {
+            /*OcrInfo ocrInfo = new OcrInfo();
+            OcrResult ocrResult = ixConnection.ix().processOcr(ocrInfo);*/
             ixConnection.ix().checkoutUsers(new String[]{groupName}, CheckoutUsersC.ALL_GROUPS, LockC.NO);
             return true;
         } catch (de.elo.utils.net.RemoteException e) {
