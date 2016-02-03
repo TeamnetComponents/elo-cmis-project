@@ -10,7 +10,7 @@
 
     <groupId>de.elo.extension</groupId>
     <artifactId>elo-commons</artifactId>
-    <version>1.0</version>
+    <version>3.0</version>
     <packaging>jar</packaging>
 
     <name>elo-commons</name>
@@ -33,12 +33,12 @@
         <dependency>
             <groupId>de.elo</groupId>
             <artifactId>elo-client</artifactId>
-            <version>${elo-client.version}</version>
+            <version>8.00.058</version>
         </dependency>
         <dependency>
             <groupId>de.elo</groupId>
             <artifactId>elo-utils</artifactId>
-            <version>${elo-client.version}</version>
+            <version>8.00.058</version>
         </dependency>
 
         <!--Apache dependencies-->
@@ -63,6 +63,11 @@
             <groupId>org.platform.common</groupId>
             <artifactId>common-utils</artifactId>
             <version>${common-utils.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.10</version>
         </dependency>
     </dependencies>
 
@@ -91,7 +96,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
+            <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven-javadoc-plugin.version}</version>
@@ -103,7 +108,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
 </project>
