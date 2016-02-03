@@ -33,12 +33,12 @@
         <dependency>
             <groupId>de.elo</groupId>
             <artifactId>elo-client</artifactId>
-            <version>8.00.058</version>
+            <version>8.00.058.001</version>
         </dependency>
         <dependency>
             <groupId>de.elo</groupId>
             <artifactId>elo-utils</artifactId>
-            <version>8.00.058</version>
+            <version>8.00.058.001</version>
         </dependency>
 
         <!--Apache dependencies-->
