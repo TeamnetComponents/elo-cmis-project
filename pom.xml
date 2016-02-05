@@ -28,7 +28,7 @@
         <repository>
             <id>tni-hq-artifact</id>
             <name>tni-hq-artifact-releases</name>
-            <url>http://tni-hq-artifactory/tn-components</url>
+            <url>http://repo.teamnet.ro/elo</url>
         </repository>
     </repositories>
 
@@ -37,7 +37,7 @@
         <java.version>1.7</java.version>
 
         <!--Project-->
-        <project.version>2.0</project.version>
+        <project.version>3.0</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!--Maven-->
@@ -134,7 +134,7 @@
                                 <version>${project.version}</version>
                             </deployProperties>
                             <publisher>
-                                <contextUrl>http://tni-hq-artifactory</contextUrl>
+                                <contextUrl>http://repo.teamnet.ro</contextUrl>
                                 <username>admin</username>
                                 <password>1234%asd</password>
                                 <repoKey>tn-components</repoKey>
